@@ -7,7 +7,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
 | NST-101 | Project scaffold, venv, dependencies | DONE | — | 2026-07-06 | Package tree + stubs, pinned deps (PySide6 6.11.1), runnable main.py, smoke test; lint/format/tests green |
-| NST-102 | Config module & constants | TODO | NST-101 | | |
+| NST-102 | Config module & constants | DONE | NST-101 | 2026-07-07 | All tunables + APP_NAME/ACCENT_COLOR in config.py; platform-branched data_dir()/db_path()/log_dir(); 15 tests |
 | NST-103 | Logging setup | TODO | NST-101 | | |
 | NST-201 | SQLite schema & migrations | TODO | NST-102 | | |
 | NST-202 | Models & repository (writes) | TODO | NST-201 | | |
