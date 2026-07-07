@@ -16,7 +16,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 ## Milestone 2 — Collector (tracking engine)
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
-| NST-301 | Sampler: psutil 1s byte-counter loop | TODO | NST-102, NST-103 | | |
+| NST-301 | Sampler: psutil 1s byte-counter loop | DONE | NST-102, NST-103 | 2026-07-07 | SamplerSource protocol + PsutilSource (active non-virtual NICs, fallback) + pure Sampler.tick with rollover/gap handling; 12 tests |
 | NST-302 | Smoother: moving average | TODO | NST-301 | | |
 | NST-303 | Segmenter: bucketing + hysteresis | TODO | NST-302 | | |
 | NST-304 | Connectivity watcher & sessions | TODO | NST-301, NST-202 | | |

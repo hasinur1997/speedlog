@@ -11,6 +11,9 @@ LOG_FILE_BACKUP_COUNT = 3
 
 # Collector tunables (see docs/architecture-context.md, "Segmenter algorithm")
 SAMPLE_INTERVAL = 1.0  # seconds between psutil samples
+SAMPLE_GAP_FACTOR = 3.0  # elapsed > factor * interval means sleep/wake: discard tick, resync
+# Virtual/loopback interfaces excluded from counter sums unless they are the only active ones
+EXCLUDED_INTERFACE_PREFIXES = ("lo", "awdl", "utun")
 SMOOTH_WINDOW = 5  # samples in the moving average
 BAND_TOLERANCE_PCT = 0.10  # band = max(pct * mean, floor)
 BAND_TOLERANCE_FLOOR_BPS = 250_000  # 0.25 MB/s absolute floor, bytes/sec

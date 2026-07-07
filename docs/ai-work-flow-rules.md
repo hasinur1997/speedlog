@@ -42,6 +42,7 @@
 - If a task turns out infeasible as specified, propose the closest feasible alternative
   with trade-offs; wait for approval.
 - Summaries at the end of a ticket: what was built, how it was tested, what's next.
+- If All acceptance criteria passed check all the criteria
 
 ## Forbidden
 - Working on multiple tickets in one change set
