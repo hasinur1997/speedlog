@@ -1,10 +1,10 @@
-"""Tests for speedlog.config (NST-102): constants and platform-aware path helpers."""
+"""Tests for app.config (NST-102): constants and platform-aware path helpers."""
 
 from pathlib import Path
 
 import pytest
 
-from speedlog import config
+from app import config
 
 
 class TestConstants:

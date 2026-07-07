@@ -27,8 +27,8 @@ Use `platform.system()` branching now so Linux/Windows support comes free later.
 Unit tests for dir helpers (monkeypatched HOME/platform); constants importable.
 
 ## Implementation notes (fill after DONE)
-- **Files touched:** `speedlog/config.py` (implemented), `tests/test_config.py` (new),
-  `speedlog/main.py` (window title now uses `config.APP_NAME` instead of a hardcoded string).
+- **Files touched:** `app/config.py` (implemented), `tests/test_config.py` (new),
+  `app/main.py` (window title now uses `config.APP_NAME` instead of a hardcoded string).
 - **Path decisions:**
   - `data_dir()`: macOS `~/Library/Application Support/Speedlog`; Linux
     `$XDG_DATA_HOME/Speedlog` (fallback `~/.local/share`); Windows `%APPDATA%\Speedlog`

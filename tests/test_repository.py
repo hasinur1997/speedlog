@@ -1,4 +1,4 @@
-"""Tests for speedlog.data.models and speedlog.data.repository (NST-202/NST-203)."""
+"""Tests for app.data.models and app.data.repository (NST-202/NST-203)."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ import sqlite3
 
 import pytest
 
-from speedlog.data import db
-from speedlog.data.models import ReportFilter, SpeedRecord
-from speedlog.data.repository import Repository
+from app.data import db
+from app.data.models import ReportFilter, SpeedRecord
+from app.data.repository import Repository
 
 
 @pytest.fixture()
@@ -227,7 +227,7 @@ def test_fetch_all_records_streams_everything_in_order(repo: Repository) -> None
 def test_fetch_all_records_chunks_across_batches(
     repo: Repository, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from speedlog import config
+    from app import config
 
     _seed_records(repo)
     monkeypatch.setattr(config, "DB_FETCH_CHUNK_SIZE", 7)  # force multiple fetchmany batches

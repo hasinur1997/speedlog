@@ -33,7 +33,7 @@ Two logical layers inside one process:
 
 ## Package layout
 ```
-speedlog/
+app/
 ├── main.py                  # entry point, QApplication bootstrap
 ├── config.py                # constants, paths, settings
 ├── logging_setup.py

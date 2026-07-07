@@ -24,7 +24,7 @@ In-memory DB: insert/read-back roundtrip; end_session sets reason; dangling-sess
 recovery closes open sessions.
 
 ## Implementation notes (fill after DONE)
-- Files: `speedlog/data/models.py`, `speedlog/data/repository.py`, `tests/test_repository.py`.
+- Files: `app/data/models.py`, `app/data/repository.py`, `tests/test_repository.py`.
 - `Session` and `SpeedRecord` are `@dataclass(slots=True)` with `id: int | None = None`
   last so required fields stay positional.
 - `Repository(conn)` wraps a caller-owned connection (one per thread per the

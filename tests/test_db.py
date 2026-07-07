@@ -1,4 +1,4 @@
-"""Tests for speedlog.data.db (NST-201)."""
+"""Tests for app.data.db (NST-201)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from speedlog.data import db
+from app.data import db
 
 
 @pytest.fixture()

@@ -21,7 +21,7 @@ Central logging configuration: rotating file handler + console in dev.
 Unit test: configure with tmp log dir, emit records, assert file written and handler config.
 
 ## Implementation notes (fill after DONE)
-- **Files touched:** `speedlog/config.py` (added logging constants), `speedlog/logging_setup.py`
+- **Files touched:** `app/config.py` (added logging constants), `app/logging_setup.py`
   (implemented), `tests/test_logging_setup.py` (new), `pyproject.toml` (Black target
   version pinned to py311 so repo checks stay green under Python 3.12),
   `docs/progress-tracker.md` (status update).
@@ -36,5 +36,5 @@ Unit test: configure with tmp log dir, emit records, assert file written and han
   `KeyboardInterrupt` still falls through to the prior excepthook.
 - **Tests:** 5 new unit tests cover file handler configuration, file output/format content,
   console enablement via `debug` and `NST_DEBUG`, idempotency, and uncaught exception
-  logging. Assertions read the file name/rotation settings from `speedlog.config`.
+  logging. Assertions read the file name/rotation settings from `app.config`.
   Verified with `pytest -q`, `ruff check .`, and `black --check .`.

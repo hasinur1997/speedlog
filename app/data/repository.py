@@ -10,8 +10,8 @@ from __future__ import annotations
 import sqlite3
 from collections.abc import Iterator
 
-from speedlog import config
-from speedlog.data.models import ReportFilter, SpeedRecord
+from app import config
+from app.data.models import ReportFilter, SpeedRecord
 
 _RECORD_COLUMNS = "id, session_id, start_ts, end_ts, download_bps, upload_bps"
 

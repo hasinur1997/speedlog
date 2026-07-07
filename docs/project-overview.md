@@ -11,7 +11,7 @@ platform-agnostic; only OS integration (autostart, packaging) may be platform-sp
 ## Product name
 **Speedlog** (working name — trademark & domain check pending before public launch).
 - Bundle ID: `com.speedlog.app` · App process/display name: "Speedlog"
-- Python package name: `speedlog` (used consistently in code, specs, and entry point)
+- Python package name: `app` (used consistently in code, specs, and entry point)
 - Data dir: `~/Library/Application Support/Speedlog` · Logs: `~/Library/Logs/Speedlog`
 
 ## Positioning (drives all marketing + feature priority)

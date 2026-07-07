@@ -15,7 +15,7 @@ Create the repository skeleton exactly as defined in architecture-context.md
 - [x] Directory tree matches architecture-context.md (empty modules with docstrings OK)
 - [x] `requirements.txt`: PySide6, psutil, reportlab (pinned versions)
 - [x] `requirements-dev.txt`: pytest, pytest-qt, ruff, black, pyinstaller
-- [x] `python -m speedlog.main` opens an empty QApplication window and exits cleanly on close
+- [x] `python -m app.main` opens an empty QApplication window and exits cleanly on close
 - [x] `README.md` with setup instructions (venv, install, run, test)
 - [x] `ruff check .` and `black --check .` pass; `pytest -q` runs (0 tests is fine)
 - [x] `.gitignore` for Python/Qt/macOS artifacts
@@ -24,11 +24,11 @@ Create the repository skeleton exactly as defined in architecture-context.md
 Python 3.11+. Keep main.py minimal — real bootstrap comes in NST-401.
 
 ## Test plan
-Smoke only: import test that `speedlog` package imports.
+Smoke only: import test that `app` package imports.
 
 ## Implementation notes (fill after DONE)
 - Completed 2026-07-06.
-- Full package tree from architecture-context.md created under `speedlog/` — all modules are
+- Full package tree from architecture-context.md created under `app/` — all modules are
   docstring-only stubs except `main.py` (minimal QApplication + empty QMainWindow) and
   `__init__.py` (`__version__ = "0.1.0"`).
 - Python 3.12 used (3.11 not installed on this machine; `requires-python = ">=3.11"` kept).
@@ -39,7 +39,7 @@ Smoke only: import test that `speedlog` package imports.
 - Added `pyproject.toml` with black (line 100), ruff (E, F, I, UP, B, py311) and pytest
   config — tool config only, packaging metadata deferred to NST-902.
 - Smoke test `tests/test_import.py` passes; `ruff check .`, `black --check .` clean.
-- Verified `python -m speedlog.main` opens a window and returns exit code 0 on close
+- Verified `python -m app.main` opens a window and returns exit code 0 on close
   (driven via a QTimer-triggered quit).
 - Note for next tickets: black warns it formats for py3.15 by default under Python 3.12;
   harmless, but `target-version` can be set if it ever bites.

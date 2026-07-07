@@ -9,7 +9,7 @@ from collections.abc import Callable
 from logging.handlers import RotatingFileHandler
 from types import TracebackType
 
-from speedlog import config
+from app import config
 
 _LOG_FORMAT = "%(asctime)s %(levelname)s [%(module)s] [%(threadName)s] %(message)s"
 _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"

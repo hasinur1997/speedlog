@@ -1,7 +1,7 @@
-"""Smoke test: the speedlog package imports."""
+"""Smoke test: the app package imports."""
 
 
-def test_speedlog_imports() -> None:
-    import speedlog
+def test_app_imports() -> None:
+    import app
 
-    assert speedlog.__version__
+    assert app.__version__

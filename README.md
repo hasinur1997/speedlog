@@ -24,7 +24,7 @@ pip install -r requirements-dev.txt    # tests, lint, packaging
 ## Run
 
 ```sh
-python -m speedlog.main
+python -m app.main
 ```
 
 ## Test & lint

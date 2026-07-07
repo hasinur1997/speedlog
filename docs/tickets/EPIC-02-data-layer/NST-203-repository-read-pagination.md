@@ -25,8 +25,8 @@ Seed 50 records: page boundaries exact (20/20/10); overlap filter includes recor
 straddling the range edges; empty filter returns all; count matches.
 
 ## Implementation notes (fill after DONE)
-- Files: `speedlog/data/models.py` (ReportFilter), `speedlog/data/repository.py`
-  (read methods + `_filter_clause`/`_row_to_record` helpers), `speedlog/config.py`
+- Files: `app/data/models.py` (ReportFilter), `app/data/repository.py`
+  (read methods + `_filter_clause`/`_row_to_record` helpers), `app/config.py`
   (`DB_FETCH_CHUNK_SIZE = 500`), `tests/test_repository.py`.
 - `ReportFilter(range_start_ts=None, range_end_ts=None)` — both bounds optional;
   each overlap condition is applied independently, so half-open filters work and

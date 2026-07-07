@@ -1,4 +1,4 @@
-"""Tests for speedlog.logging_setup (NST-103)."""
+"""Tests for app.logging_setup (NST-103)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from speedlog import logging_setup
+from app import logging_setup
 
 
 @pytest.fixture(autouse=True)
