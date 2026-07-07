@@ -29,6 +29,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-402 | System tray icon + live speed text | DONE | NST-401, NST-305 | 2026-07-07 | SpeedTrayIcon (template/mask icon): tooltip `↓ x  ↑ y` throttled to 1/s, `— offline` on session end, trigger/double-click opens window; shared format_speed() in app/formatting.py; collector started + wired in main(); 17 tests |
 | NST-403 | Tray menu (open, quit w/ confirm) | DONE | NST-402 | 2026-07-07 | Tray menu adds Open/Quit actions, quit confirmation, and `quit_confirmed -> app.quit` wiring; tray tests expanded |
 | NST-404 | Quit behavior: stop tracking, flush segment | DONE | NST-403, NST-305 | 2026-07-07 | `aboutToQuit` now stops + joins the collector, flushes the final segment/session on quit, and startup recovery of dangling sessions is covered by integration tests |
+| NST-405 | Professional UI refresh: segmented tabs & cohesive chrome | DONE | NST-605, NST-802 | 2026-07-07 | Stylesheet-only redesign: quiet segmented tab control (no geometry jump), soft app bg behind white cards, unified control radii/states, tinted table selection; verified via offscreen screenshots |
 | NST-501 | Live tab: current speeds + session info | DONE | NST-401, NST-305 | 2026-07-07 | Real LiveView widget with connected-since line, hidden-tab speed caching, and collector/tray signal timestamp wiring; 3 pytest-qt tests added |
 | NST-502 | Live sparkline chart (nice-to-have) | DONE | NST-501 | 2026-07-07 | Rolling 60-sample live chart with hidden-tab redraw pause; pinned pyqtgraph and added pytest-qt coverage |
 | NST-503 | Live tab visual polish | DONE | NST-502, NST-605 | 2026-07-07 | Live tab now renders on a white surfaced panel with cleaner tab states; pytest-qt styling-hook coverage added |
@@ -49,7 +50,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
 | NST-801 | PDF generator (header, table, footer) | DONE | NST-203 | 2026-07-07 | Added streaming reportlab PDF export, cross-platform full-name lookup, and PDF coverage for empty/multi-page/large reports |
-| NST-802 | Export flow in UI (dialog, busy state) | DONE | NST-801, NST-702 | 2026-07-07 | Reports tab now exports the full filtered set via a worker thread with save dialog defaults, status-bar feedback, Finder reveal action, and pytest-qt coverage |
+| NST-802 | Export flow in UI (dialog, busy state) | DONE | NST-801, NST-702 | 2026-07-07 | Reports tab now exports the full filtered set via a worker thread with save dialog defaults, status-bar feedback, Finder reveal action, and a surfaced filter/export layout that matches the reports design system |
 | NST-901 | Autostart at login (macOS LaunchAgent) | TODO | NST-401 | | |
 | NST-902 | PyInstaller macOS .app packaging | TODO | all M1–M4 | | |
 | NST-903 | Code signing & notarization guide | TODO | NST-902 | | |

@@ -187,11 +187,16 @@ def test_reports_page_exposes_visual_polish_hooks(qtbot, tmp_path: Path) -> None
 
     assert page.surface.objectName() == "reportsSurface"
     assert page.header_widget.objectName() == "reportsHeader"
+    assert page.controls_card.objectName() == "reportsControlsCard"
     assert isinstance(page.filter_panel, FilterPanel)
     assert page.filter_panel.objectName() == "reportsFilterPanel"
+    assert page.filter_panel.parentWidget() is page.controls_card
     assert (
         page.filter_panel.mode_combo.toolTip() == "Choose how the reports table should be filtered."
     )
+    assert page.filter_status_row.objectName() == "reportsFilterStatusRow"
+    assert page.filter_status_caption_label.objectName() == "reportsFilterStatusCaptionLabel"
+    assert page.filter_status_caption_label.text() == "Current scope"
     assert page.filter_status_label.objectName() == "reportsFilterStatusLabel"
     assert page.filter_status_label.text() == "Showing all records"
     assert page.title_label.text() == "Connection History"

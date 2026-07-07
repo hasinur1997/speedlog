@@ -40,5 +40,8 @@ error path shows message; verify full-set (not page) query used.
   main-window status bar displays `Exporting…`. Success updates the status bar and
   shows a `Reveal in Finder` action; failure shows a friendly `QMessageBox` while the
   worker logs the full traceback with `logger.exception(...)`.
+- Follow-up polish kept the export action inside a surfaced controls card on the Reports
+  page and aligned the filter inputs/buttons with the existing rounded white-panel design
+  system so the export UI reads as part of the page rather than an added-on control.
 - Verification: `env QT_QPA_PLATFORM=offscreen ./.venv/bin/pytest -q`,
   `./.venv/bin/ruff check .`, and `./.venv/bin/black --check .`

@@ -331,15 +331,39 @@ class ReportsPage(QWidget):
         header_layout.addWidget(self.subtitle_label)
         surface_layout.addWidget(self.header_widget)
 
-        self.filter_panel = FilterPanel(self.surface)
+        self.controls_card = QWidget(self.surface)
+        self.controls_card.setObjectName("reportsControlsCard")
+        self.controls_card.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        controls_layout = QVBoxLayout(self.controls_card)
+        controls_layout.setContentsMargins(
+            config.REPORTS_SECTION_SPACING,
+            config.REPORTS_SECTION_SPACING,
+            config.REPORTS_SECTION_SPACING,
+            config.REPORTS_SECTION_SPACING,
+        )
+        controls_layout.setSpacing(config.REPORTS_FILTER_BAR_SPACING)
+
+        self.filter_panel = FilterPanel(self.controls_card)
         self.filter_panel.filter_applied.connect(self._apply_filter_state)
         self.filter_panel.export_requested.connect(self.export_pdf)
-        surface_layout.addWidget(self.filter_panel)
+        controls_layout.addWidget(self.filter_panel)
 
-        self.filter_status_label = QLabel(self.surface)
+        self.filter_status_row = QWidget(self.controls_card)
+        self.filter_status_row.setObjectName("reportsFilterStatusRow")
+        status_layout = QHBoxLayout(self.filter_status_row)
+        status_layout.setContentsMargins(0, 0, 0, 0)
+        status_layout.setSpacing(config.REPORTS_FILTER_BAR_SPACING)
+
+        self.filter_status_caption_label = QLabel("Current scope", self.filter_status_row)
+        self.filter_status_caption_label.setObjectName("reportsFilterStatusCaptionLabel")
+        status_layout.addWidget(self.filter_status_caption_label)
+
+        self.filter_status_label = QLabel(self.filter_status_row)
         self.filter_status_label.setObjectName("reportsFilterStatusLabel")
         self.filter_status_label.setWordWrap(True)
-        surface_layout.addWidget(self.filter_status_label)
+        status_layout.addWidget(self.filter_status_label, 1)
+        controls_layout.addWidget(self.filter_status_row)
+        surface_layout.addWidget(self.controls_card)
 
         self.model = ReportsTableModel(self)
         self.table = QTableView(self)

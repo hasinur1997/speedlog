@@ -1,8 +1,19 @@
-/* Speedlog Qt stylesheet — subtle, palette-aware polish for the native shell. */
+/* Speedlog Qt stylesheet — cohesive light design (NST-405).
+ *
+ * Design tokens (keep every color on this list):
+ *   App background   #EEF1F6      Card surface      #FFFFFF
+ *   Hairline border  #E3E8F0      Control border    #D5DDE8
+ *   Inner panel      #F7F9FC      Inner border      #EBF0F6
+ *   Text             #1A2433      Muted text        #64748B
+ *   Faint text       #94A3B8      Hover wash        #E4EAF2
+ *   Accent           #2E7CF6      Accent hover      #2368DB
+ *   Accent pressed   #1D5BC4      Accent tint       #E2EDFE
+ *   Radii: card 16px, inner panel 12px, control 8px.
+ */
 
 QMainWindow#mainWindow,
 QWidget#mainWindowContent {
-    background: palette(window);
+    background: #EEF1F6;
 }
 
 QWidget#liveTab,
@@ -10,9 +21,11 @@ QWidget#reportsTab {
     background: transparent;
 }
 
+/* --- Segmented tab control ------------------------------------------------ */
+
 QTabWidget#mainTabs::pane {
     border: none;
-    top: 10px;
+    top: 8px;
     background: transparent;
 }
 
@@ -20,78 +33,87 @@ QTabWidget#mainTabs::tab-bar {
     left: 0px;
 }
 
+QTabWidget#mainTabs QTabBar {
+    qproperty-drawBase: 0;
+    background: transparent;
+}
+
 QTabWidget#mainTabs QTabBar::tab {
-    background: palette(window);
-    color: palette(mid);
-    border: 1px solid palette(midlight);
-    border-radius: 13px;
-    padding: 10px 18px;
+    background: transparent;
+    color: #64748B;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 7px 24px;
     margin: 0 6px 0 0;
-    min-width: 92px;
+    min-width: 96px;
+    font-size: 13px;
     font-weight: 600;
 }
 
 QTabWidget#mainTabs QTabBar::tab:hover:!selected {
-    background: palette(base);
-    color: palette(text);
+    background: #E4EAF2;
+    color: #1A2433;
 }
 
 QTabWidget#mainTabs QTabBar::tab:selected {
-    background: palette(base);
-    color: palette(text);
-    border-color: palette(highlight);
+    background: white;
+    color: #1A2433;
+    border-color: #D5DDE8;
 }
 
-QTabWidget#mainTabs QTabBar::tab:!selected {
-    margin-top: 2px;
-}
+/* --- Live tab ------------------------------------------------------------- */
 
 QWidget#liveSurface {
     background: white;
-    border: 1px solid #E2E8F0;
-    border-radius: 20px;
+    border: 1px solid #E3E8F0;
+    border-radius: 16px;
 }
 
 QLabel#downloadSpeedLabel,
 QLabel#uploadSpeedLabel {
-    color: #162033;
+    color: #1A2433;
 }
 
 QLabel#sessionStatusLabel,
 QLabel#liveSparklineFallback {
-    color: #5B6472;
+    color: #64748B;
 }
 
 QWidget#liveSparkline {
-    background: #F8FAFC;
-    border: 1px solid #E8EEF5;
-    border-radius: 14px;
+    background: #F7F9FC;
+    border: 1px solid #EBF0F6;
+    border-radius: 12px;
 }
 
 QLabel#liveSparklineFallback {
     padding: 20px;
 }
 
+/* --- Reports surface & header --------------------------------------------- */
+
 QWidget#reportsSurface {
-    background: palette(base);
-    border: 1px solid palette(midlight);
+    background: white;
+    border: 1px solid #E3E8F0;
     border-radius: 16px;
 }
 
 QWidget#reportsHeader,
-QWidget#reportsPaginationBar {
+QWidget#reportsPaginationBar,
+QWidget#reportsFilterPanel,
+QWidget#reportsFilterStatusRow {
     background: transparent;
     border: none;
 }
 
-QWidget#reportsFilterPanel {
-    background: transparent;
-    border: none;
+QWidget#reportsControlsCard {
+    background: #F7F9FC;
+    border: 1px solid #EBF0F6;
+    border-radius: 12px;
 }
 
 QLabel#reportsTitleLabel {
-    color: palette(text);
-    font-size: 22px;
+    color: #1A2433;
+    font-size: 20px;
     font-weight: 700;
 }
 
@@ -100,78 +122,138 @@ QLabel#reportsPageLabel,
 QLabel#reportsCountLabel,
 QLabel#reportsPageEllipsisLabel,
 QLabel#reportsFilterDateRangeSeparator,
-QLabel#reportsFilterTimeRangeSeparator {
-    color: palette(mid);
+QLabel#reportsFilterTimeRangeSeparator,
+QLabel#reportsFilterStatusCaptionLabel {
+    color: #64748B;
 }
 
 QLabel#reportsSubtitleLabel {
     font-size: 13px;
 }
 
-QLabel#reportsFilterStatusLabel {
-    color: palette(text);
+QLabel#reportsFilterStatusCaptionLabel {
+    font-size: 12px;
     font-weight: 600;
 }
+
+QLabel#reportsFilterStatusLabel {
+    color: #1A2433;
+    font-weight: 600;
+}
+
+/* --- Filter controls -------------------------------------------------------- */
 
 QWidget#reportsFilterPanel QComboBox,
 QWidget#reportsFilterPanel QDateEdit,
 QWidget#reportsFilterPanel QTimeEdit {
     min-height: 30px;
+    background: white;
+    color: #1A2433;
+    border: 1px solid #D5DDE8;
+    border-radius: 8px;
+    padding: 0 12px;
 }
 
+QWidget#reportsFilterPanel QComboBox:hover,
+QWidget#reportsFilterPanel QDateEdit:hover,
+QWidget#reportsFilterPanel QTimeEdit:hover {
+    border-color: #B9C6D8;
+}
+
+QWidget#reportsFilterPanel QComboBox:focus,
+QWidget#reportsFilterPanel QDateEdit:focus,
+QWidget#reportsFilterPanel QTimeEdit:focus,
+QWidget#reportsFilterPanel QComboBox:on {
+    border-color: #2E7CF6;
+}
+
+QWidget#reportsFilterPanel QComboBox::drop-down,
+QWidget#reportsFilterPanel QDateEdit::drop-down,
+QWidget#reportsFilterPanel QTimeEdit::drop-down {
+    border: none;
+    width: 24px;
+}
+
+/* --- Buttons ---------------------------------------------------------------- */
+
 QPushButton#reportsFilterApplyButton,
-QPushButton#reportsFilterResetButton {
-    background: palette(button);
-    color: palette(button-text);
-    border: 1px solid palette(midlight);
-    border-radius: 10px;
-    padding: 7px 12px;
+QPushButton#reportsFilterResetButton,
+QPushButton#reportsPrevButton,
+QPushButton#reportsNextButton,
+QWidget#reportsPageButtonsWidget QPushButton {
+    background: white;
+    color: #1A2433;
+    border: 1px solid #D5DDE8;
+    border-radius: 8px;
+    padding: 6px 14px;
     min-height: 18px;
+    font-weight: 500;
 }
 
 QPushButton#reportsFilterApplyButton:hover:!disabled,
-QPushButton#reportsFilterResetButton:hover:!disabled {
-    background: palette(alternate-base);
+QPushButton#reportsFilterResetButton:hover:!disabled,
+QPushButton#reportsPrevButton:hover:!disabled,
+QPushButton#reportsNextButton:hover:!disabled,
+QWidget#reportsPageButtonsWidget QPushButton:hover:!checked {
+    background: #F7F9FC;
+    border-color: #B9C6D8;
+}
+
+QPushButton#reportsFilterApplyButton:pressed,
+QPushButton#reportsFilterResetButton:pressed,
+QPushButton#reportsPrevButton:pressed:!disabled,
+QPushButton#reportsNextButton:pressed:!disabled,
+QWidget#reportsPageButtonsWidget QPushButton:pressed:!checked {
+    background: #E4EAF2;
+}
+
+QPushButton#reportsFilterApplyButton:focus,
+QPushButton#reportsFilterResetButton:focus {
+    border-color: #2E7CF6;
 }
 
 QPushButton#reportsExportButton {
-    background: palette(highlight);
-    color: palette(highlighted-text);
-    border: 1px solid palette(highlight);
-    border-radius: 10px;
-    padding: 7px 14px;
+    background: #2E7CF6;
+    color: white;
+    border: 1px solid #2E7CF6;
+    border-radius: 8px;
+    padding: 6px 18px;
     min-height: 18px;
     font-weight: 600;
 }
 
 QPushButton#reportsExportButton:hover:!disabled {
-    background: palette(link);
-    border-color: palette(link);
+    background: #2368DB;
+    border-color: #2368DB;
+}
+
+QPushButton#reportsExportButton:pressed:!disabled {
+    background: #1D5BC4;
+    border-color: #1D5BC4;
 }
 
 QPushButton#reportsExportButton:disabled {
-    background: palette(midlight);
-    color: palette(mid);
-    border-color: palette(midlight);
+    background: #A8C6F5;
+    color: white;
+    border-color: #A8C6F5;
 }
 
-QLabel#reportsPageLabel {
-    font-weight: 600;
-}
+/* --- Table ------------------------------------------------------------------ */
 
 QWidget#reportsTableArea {
-    background: palette(base);
-    border: 1px solid palette(midlight);
+    background: white;
+    border: 1px solid #EBF0F6;
     border-radius: 12px;
 }
 
 QTableView#reportsTable {
     background: transparent;
-    alternate-background-color: palette(alternate-base);
+    alternate-background-color: #F7F9FC;
     border: none;
     gridline-color: transparent;
-    selection-background-color: palette(highlight);
-    selection-color: palette(highlighted-text);
+    color: #1A2433;
+    selection-background-color: #E2EDFE;
+    selection-color: #1A2433;
     outline: 0;
 }
 
@@ -182,67 +264,62 @@ QTableView#reportsTable::item {
 
 QTableView#reportsTable QTableCornerButton::section,
 QTableView#reportsTable QHeaderView::section {
-    background: palette(alternate-base);
-    color: palette(text);
+    background: white;
+    color: #64748B;
     border: none;
-    border-bottom: 1px solid palette(midlight);
+    border-bottom: 1px solid #EBF0F6;
     padding: 10px 12px;
+    font-size: 12px;
     font-weight: 600;
 }
 
 QLabel#reportsEmptyStateLabel {
-    color: palette(mid);
+    color: #94A3B8;
     font-size: 14px;
     padding: 48px 24px;
 }
 
-QPushButton#reportsPrevButton,
-QPushButton#reportsNextButton,
-QWidget#reportsPageButtonsWidget QPushButton {
-    background: palette(button);
-    color: palette(button-text);
-    border: 1px solid palette(midlight);
-    border-radius: 10px;
-    padding: 7px 12px;
-    min-height: 18px;
-}
+/* --- Pagination --------------------------------------------------------------- */
 
 QWidget#reportsPageButtonsWidget QPushButton {
-    min-width: 18px;
-}
-
-QPushButton#reportsPrevButton:hover:!disabled,
-QPushButton#reportsNextButton:hover:!disabled,
-QWidget#reportsPageButtonsWidget QPushButton:hover:!checked {
-    background: palette(alternate-base);
+    min-width: 32px;
+    padding: 6px 10px;
 }
 
 QWidget#reportsPageButtonsWidget QPushButton:checked {
-    background: palette(highlight);
-    color: palette(highlighted-text);
-    border-color: palette(highlight);
-    font-weight: 700;
+    background: #2E7CF6;
+    color: white;
+    border-color: #2E7CF6;
+    font-weight: 600;
+}
+
+QLabel#reportsPageLabel {
+    font-weight: 600;
 }
 
 QPushButton#reportsPrevButton:disabled,
 QPushButton#reportsNextButton:disabled {
-    color: palette(mid);
-    background: palette(window);
+    color: #94A3B8;
+    background: #F7F9FC;
+    border-color: #EBF0F6;
 }
+
+/* --- Status bar ----------------------------------------------------------------- */
 
 QStatusBar#mainStatusBar {
     background: transparent;
-    border-top: 1px solid palette(midlight);
+    color: #64748B;
+    border-top: 1px solid #E3E8F0;
 }
 
 QStatusBar#mainStatusBar QPushButton#reportsRevealExportButton {
     background: transparent;
-    color: palette(highlight);
+    color: #2E7CF6;
     border: none;
     padding: 4px 8px;
     font-weight: 600;
 }
 
 QStatusBar#mainStatusBar QPushButton#reportsRevealExportButton:hover {
-    color: palette(link);
+    color: #2368DB;
 }
