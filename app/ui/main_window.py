@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QColor, QIcon, QPainter, QPixmap
-from PySide6.QtWidgets import QLabel, QMainWindow, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QMainWindow, QTabWidget
 
 from app import config
 from app.ui.live_view import LiveView
+from app.ui.reports.reports_page import ReportsPage
 
 
 def app_icon() -> QIcon:
@@ -31,20 +34,10 @@ def app_icon() -> QIcon:
     return QIcon(pixmap)
 
 
-def _placeholder_tab(object_name: str, text: str) -> QWidget:
-    tab = QWidget()
-    tab.setObjectName(object_name)
-    layout = QVBoxLayout(tab)
-    label = QLabel(text, tab)
-    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    layout.addWidget(label)
-    return tab
-
-
 class MainWindow(QMainWindow):
     """Application window: Live / Reports tabs; closing hides it (tracking continues)."""
 
-    def __init__(self) -> None:
+    def __init__(self, reports_db_path: Path | str | None = None) -> None:
         super().__init__()
         self.setObjectName("mainWindow")
         self.setWindowTitle(config.APP_NAME)
@@ -54,11 +47,9 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget(self)
         self.tabs.setObjectName("mainTabs")
         self.live_view = LiveView(self.tabs)
+        self.reports_page = ReportsPage(self.tabs, db_path=reports_db_path)
         self.tabs.addTab(self.live_view, "Live")
-        self.tabs.addTab(
-            _placeholder_tab("reportsTab", "Reports coming soon (NST-601)"),
-            "Reports",
-        )
+        self.tabs.addTab(self.reports_page, "Reports")
         self.setCentralWidget(self.tabs)
 
     def closeEvent(self, event: QCloseEvent) -> None:

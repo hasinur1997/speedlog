@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QTabWidget, QWidget
 from app import config
 from app.ui.live_view import LiveView
 from app.ui.main_window import MainWindow, app_icon
+from app.ui.reports.reports_page import ReportsPage
 
 
 @pytest.fixture
@@ -36,7 +37,9 @@ def test_tabs_exist_by_object_name(window: MainWindow) -> None:
     live_tab = window.findChild(QWidget, "liveTab")
     assert live_tab is not None
     assert isinstance(live_tab, LiveView)
-    assert window.findChild(QWidget, "reportsTab") is not None
+    reports_tab = window.findChild(QWidget, "reportsTab")
+    assert reports_tab is not None
+    assert isinstance(reports_tab, ReportsPage)
 
 
 def test_close_event_hides_window_instead_of_quitting(qtbot, window: MainWindow) -> None:

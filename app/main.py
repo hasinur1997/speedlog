@@ -152,6 +152,7 @@ def main() -> int:
     tray = SpeedTrayIcon(window, parent=app)
     service.speed_sampled.connect(window.live_view.on_speed_sampled)
     service.session_changed.connect(window.live_view.on_session_changed)
+    service.segment_closed.connect(window.reports_page.on_segment_closed)
     service.speed_sampled.connect(tray.on_speed_sampled)
     service.session_changed.connect(tray.on_session_changed)
     tray.quit_confirmed.connect(app.quit)

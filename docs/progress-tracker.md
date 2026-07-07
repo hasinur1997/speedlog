@@ -35,7 +35,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 ## Milestone 4 — Reports
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
-| NST-601 | Reports table model + view | TODO | NST-203, NST-401 | | |
+| NST-601 | Reports table model + view | DONE | NST-203, NST-401 | 2026-07-07 | ReportsPage + ReportsTableModel landed with empty state, guarded page-1 auto-refresh, and pytest-qt coverage |
 | NST-602 | Pagination (20/page) | TODO | NST-601 | | |
 | NST-603 | Formatting: time ranges, units, empty state | TODO | NST-601 | | |
 | NST-701 | Filter panel UI (4 modes) | TODO | NST-601 | | |
