@@ -134,6 +134,27 @@ QPushButton#reportsFilterResetButton:hover:!disabled {
     background: palette(alternate-base);
 }
 
+QPushButton#reportsExportButton {
+    background: palette(highlight);
+    color: palette(highlighted-text);
+    border: 1px solid palette(highlight);
+    border-radius: 10px;
+    padding: 7px 14px;
+    min-height: 18px;
+    font-weight: 600;
+}
+
+QPushButton#reportsExportButton:hover:!disabled {
+    background: palette(link);
+    border-color: palette(link);
+}
+
+QPushButton#reportsExportButton:disabled {
+    background: palette(midlight);
+    color: palette(mid);
+    border-color: palette(midlight);
+}
+
 QLabel#reportsPageLabel {
     font-weight: 600;
 }
@@ -207,4 +228,21 @@ QPushButton#reportsPrevButton:disabled,
 QPushButton#reportsNextButton:disabled {
     color: palette(mid);
     background: palette(window);
+}
+
+QStatusBar#mainStatusBar {
+    background: transparent;
+    border-top: 1px solid palette(midlight);
+}
+
+QStatusBar#mainStatusBar QPushButton#reportsRevealExportButton {
+    background: transparent;
+    color: palette(highlight);
+    border: none;
+    padding: 4px 8px;
+    font-weight: 600;
+}
+
+QStatusBar#mainStatusBar QPushButton#reportsRevealExportButton:hover {
+    color: palette(link);
 }

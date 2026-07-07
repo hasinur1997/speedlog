@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QColor, QIcon, QPainter, QPixmap
-from PySide6.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QMainWindow, QStatusBar, QTabWidget, QVBoxLayout, QWidget
 
 from app import config
 from app.ui.live_view import LiveView
@@ -66,6 +66,10 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.reports_page, "Reports")
         content_layout.addWidget(self.tabs)
         self.setCentralWidget(content)
+
+        status_bar = QStatusBar(self)
+        status_bar.setObjectName("mainStatusBar")
+        self.setStatusBar(status_bar)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Hide instead of closing — the app keeps tracking in the tray."""

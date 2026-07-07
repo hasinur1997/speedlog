@@ -49,7 +49,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
 | NST-801 | PDF generator (header, table, footer) | DONE | NST-203 | 2026-07-07 | Added streaming reportlab PDF export, cross-platform full-name lookup, and PDF coverage for empty/multi-page/large reports |
-| NST-802 | Export flow in UI (dialog, busy state) | TODO | NST-801, NST-702 | | |
+| NST-802 | Export flow in UI (dialog, busy state) | DONE | NST-801, NST-702 | 2026-07-07 | Reports tab now exports the full filtered set via a worker thread with save dialog defaults, status-bar feedback, Finder reveal action, and pytest-qt coverage |
 | NST-901 | Autostart at login (macOS LaunchAgent) | TODO | NST-401 | | |
 | NST-902 | PyInstaller macOS .app packaging | TODO | all M1–M4 | | |
 | NST-903 | Code signing & notarization guide | TODO | NST-902 | | |

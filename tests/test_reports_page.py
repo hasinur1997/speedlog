@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import logging
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from PySide6.QtCore import QDate, Qt, QTime
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QPushButton
 
 import app.formatting as formatting_module
 import app.ui.reports.filter_builder as filter_builder_module
+import app.ui.reports.reports_page as reports_page_module
 from app import config
 from app.data import db
 from app.data.models import ReportFilter, SpeedRecord
@@ -39,6 +42,15 @@ def _page_button(page: ReportsPage, page_number: int) -> QPushButton:
     button = page.findChild(QPushButton, f"reportsPageNumberButton{page_number}")
     assert button is not None
     return button
+
+
+def _show_reports_window(qtbot, db_file: Path) -> MainWindow:
+    window = MainWindow(reports_db_path=db_file)
+    qtbot.addWidget(window)
+    window.show()
+    qtbot.waitExposed(window)
+    window.tabs.setCurrentWidget(window.reports_page)
+    return window
 
 
 def _insert_record(
@@ -184,6 +196,8 @@ def test_reports_page_exposes_visual_polish_hooks(qtbot, tmp_path: Path) -> None
     assert page.filter_status_label.text() == "Showing all records"
     assert page.title_label.text() == "Connection History"
     assert "move through pages" in page.subtitle_label.text()
+    assert page.filter_panel.export_button.objectName() == "reportsExportButton"
+    assert page.filter_panel.export_button.toolTip() == "Export the full filtered report as a PDF."
     assert page.table_area.objectName() == "reportsTableArea"
     assert page.pagination_bar.objectName() == "reportsPaginationBar"
     assert not page.table.showGrid()
@@ -574,3 +588,188 @@ def test_reports_page_filter_state_persists_across_tabs_but_not_restart(
     )
     assert restarted_window.reports_page.filter_panel.mode_combo.currentText() == "Date"
     assert restarted_window.reports_page.filter_status_label.text() == "Showing all records"
+
+
+def test_reports_page_export_uses_unfiltered_and_date_filter_default_names(
+    qtbot, tmp_path: Path, monkeypatch
+) -> None:
+    db_file = tmp_path / "reports.db"
+    _seed_filter_records(db_file)
+    monkeypatch.setattr(filter_builder_module, "_local_zone", lambda: ZoneInfo("UTC"))
+    monkeypatch.setattr(reports_page_module, "_local_zone", lambda: ZoneInfo("UTC"))
+
+    window = _show_reports_window(qtbot, db_file)
+    qtbot.waitUntil(lambda: window.reports_page.count_label.text() == "25 records", timeout=1000)
+
+    captured: dict[str, str] = {}
+
+    def fake_get_save_file_name(
+        _parent, _title: str, directory: str, _file_filter: str
+    ) -> tuple[str, str]:
+        captured["directory"] = directory
+        return "", ""
+
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", fake_get_save_file_name)
+
+    qtbot.mouseClick(window.reports_page.filter_panel.export_button, Qt.MouseButton.LeftButton)
+    assert Path(captured["directory"]).name == "Speedlog-Report-all.pdf"
+
+    window.reports_page.filter_panel.mode_combo.setCurrentText("Date")
+    window.reports_page.filter_panel.primary_date_edit.setDate(QDate(2026, 7, 7))
+    qtbot.mouseClick(window.reports_page.filter_panel.apply_button, Qt.MouseButton.LeftButton)
+    qtbot.waitUntil(
+        lambda: window.reports_page.filter_status_label.text() == "Filtered: 2026-07-07",
+        timeout=1000,
+    )
+
+    qtbot.mouseClick(window.reports_page.filter_panel.export_button, Qt.MouseButton.LeftButton)
+    assert Path(captured["directory"]).name == "Speedlog-Report-2026-07-07_2026-07-07.pdf"
+
+
+def test_reports_page_export_runs_in_worker_and_uses_full_filtered_set(
+    qtbot, tmp_path: Path, monkeypatch
+) -> None:
+    db_file = tmp_path / "reports.db"
+    _seed_records(db_file, 25)
+
+    window = _show_reports_window(qtbot, db_file)
+    qtbot.waitUntil(lambda: window.reports_page.model.rowCount() == config.PAGE_SIZE, timeout=1000)
+
+    qtbot.mouseClick(window.reports_page.next_button, Qt.MouseButton.LeftButton)
+    qtbot.waitUntil(lambda: window.reports_page.current_page == 2, timeout=1000)
+    assert window.reports_page.model.rowCount() == 5
+
+    expected_records = [
+        SpeedRecord(
+            session_id=1,
+            start_ts=BASE_TS + index,
+            end_ts=BASE_TS + index + RECORD_DURATION_SECS,
+            download_bps=1_000_000.0 + index,
+            upload_bps=500_000.0 + index,
+        )
+        for index in range(25)
+    ]
+    captured: dict[str, object] = {}
+    started = threading.Event()
+    release = threading.Event()
+
+    def fake_fetch_all_records(self, report_filter: ReportFilter):
+        captured["report_filter"] = report_filter
+        return iter(expected_records)
+
+    def fake_generate_report(records, filter_label: str, full_name: str, out_path: Path) -> None:
+        captured["record_count"] = sum(1 for _ in records)
+        captured["filter_label"] = filter_label
+        captured["full_name"] = full_name
+        captured["out_path"] = out_path
+        started.set()
+        release.wait(timeout=2)
+        out_path.write_text("pdf", encoding="utf-8")
+
+    monkeypatch.setattr(
+        QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (
+            str(tmp_path / "full-report"),
+            reports_page_module.EXPORT_FILE_FILTER,
+        ),
+    )
+    monkeypatch.setattr(reports_page_module.Repository, "fetch_all_records", fake_fetch_all_records)
+    monkeypatch.setattr(reports_page_module, "generate_report", fake_generate_report)
+    monkeypatch.setattr(reports_page_module, "get_full_name", lambda: "Test User")
+
+    qtbot.mouseClick(window.reports_page.filter_panel.export_button, Qt.MouseButton.LeftButton)
+
+    qtbot.waitUntil(started.is_set, timeout=1000)
+    assert not window.reports_page.filter_panel.export_button.isEnabled()
+    assert window.statusBar().currentMessage() == reports_page_module.EXPORT_BUSY_TEXT
+
+    release.set()
+    qtbot.waitUntil(
+        lambda: window.reports_page.filter_panel.export_button.isEnabled(),
+        timeout=1000,
+    )
+
+    assert captured["record_count"] == 25
+    report_filter = captured["report_filter"]
+    assert isinstance(report_filter, ReportFilter)
+    assert report_filter.range_start_ts is None
+    assert report_filter.range_end_ts is None
+    assert captured["filter_label"] == "All records"
+    assert captured["full_name"] == "Test User"
+    assert captured["out_path"] == tmp_path / "full-report.pdf"
+    assert window.statusBar().currentMessage() == "Exported PDF to full-report.pdf"
+
+    reveal_button = window.findChild(
+        QPushButton,
+        reports_page_module.EXPORT_REVEAL_BUTTON_OBJECT_NAME,
+    )
+    assert reveal_button is not None
+    assert reveal_button.isVisible()
+    assert reveal_button.text() == reports_page_module.EXPORT_REVEAL_TEXT
+
+    revealed: list[Path] = []
+    monkeypatch.setattr(
+        reports_page_module,
+        "_reveal_exported_file",
+        lambda path: revealed.append(path) or True,
+    )
+    qtbot.mouseClick(reveal_button, Qt.MouseButton.LeftButton)
+    assert revealed == [tmp_path / "full-report.pdf"]
+
+
+def test_reports_page_export_failure_shows_message_and_logs_traceback(
+    qtbot, tmp_path: Path, monkeypatch, caplog
+) -> None:
+    db_file = tmp_path / "reports.db"
+    _seed_records(db_file, 1)
+
+    window = _show_reports_window(qtbot, db_file)
+    qtbot.waitUntil(lambda: window.reports_page.count_label.text() == "1 record", timeout=1000)
+
+    failures: list[tuple[str, str]] = []
+
+    def fake_generate_report(records, _filter_label: str, _full_name: str, _out_path: Path) -> None:
+        list(records)
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(
+        QFileDialog,
+        "getSaveFileName",
+        lambda *_args, **_kwargs: (
+            str(tmp_path / "broken-report.pdf"),
+            reports_page_module.EXPORT_FILE_FILTER,
+        ),
+    )
+    monkeypatch.setattr(reports_page_module, "generate_report", fake_generate_report)
+    monkeypatch.setattr(reports_page_module, "get_full_name", lambda: "Test User")
+    monkeypatch.setattr(
+        QMessageBox,
+        "critical",
+        lambda _parent, title, text: failures.append((title, text)),
+    )
+
+    with caplog.at_level(logging.ERROR, logger=reports_page_module.__name__):
+        qtbot.mouseClick(window.reports_page.filter_panel.export_button, Qt.MouseButton.LeftButton)
+        qtbot.waitUntil(
+            lambda: window.reports_page.filter_panel.export_button.isEnabled(),
+            timeout=1000,
+        )
+
+    assert failures == [
+        (
+            reports_page_module.EXPORT_FAILURE_TITLE,
+            reports_page_module.EXPORT_FAILURE_TEXT,
+        )
+    ]
+    assert window.statusBar().currentMessage() == reports_page_module.EXPORT_FAILURE_STATUS_TEXT
+
+    reveal_button = window.findChild(
+        QPushButton,
+        reports_page_module.EXPORT_REVEAL_BUTTON_OBJECT_NAME,
+    )
+    assert reveal_button is None or not reveal_button.isVisible()
+    assert any(
+        "Failed to export PDF report to" in record.getMessage() and record.exc_info is not None
+        for record in caplog.records
+    )

@@ -45,6 +45,7 @@ def test_tabs_exist_by_object_name(window: MainWindow) -> None:
     reports_tab = window.findChild(QWidget, "reportsTab")
     assert reports_tab is not None
     assert isinstance(reports_tab, ReportsPage)
+    assert window.statusBar().objectName() == "mainStatusBar"
 
 
 def test_close_event_hides_window_instead_of_quitting(qtbot, window: MainWindow) -> None:

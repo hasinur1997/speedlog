@@ -33,6 +33,7 @@ class FilterPanel(QWidget):
     """Reports filter bar with mode-specific editors and Apply/Reset actions."""
 
     filter_applied = Signal(object)
+    export_requested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -103,6 +104,14 @@ class FilterPanel(QWidget):
         layout.addWidget(self.reset_button)
 
         layout.addStretch(1)
+
+        self.export_button = QPushButton("Export PDF", self)
+        self.export_button.setObjectName("reportsExportButton")
+        self.export_button.setAutoDefault(False)
+        self.export_button.setToolTip("Export the full filtered report as a PDF.")
+        self.export_button.clicked.connect(self.export_requested.emit)
+        layout.addWidget(self.export_button)
+
         self._set_tab_order()
         self._update_editor_visibility(self.mode_combo.currentIndex())
 
@@ -201,6 +210,7 @@ class FilterPanel(QWidget):
         QWidget.setTabOrder(self.start_time_edit, self.end_time_edit)
         QWidget.setTabOrder(self.end_time_edit, self.apply_button)
         QWidget.setTabOrder(self.apply_button, self.reset_button)
+        QWidget.setTabOrder(self.reset_button, self.export_button)
 
     def _date_from_edit(self, edit: QDateEdit) -> date:
         selected_date = edit.date()
