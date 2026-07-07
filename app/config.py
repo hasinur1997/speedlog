@@ -28,6 +28,15 @@ DB_FETCH_CHUNK_SIZE = 500  # rows per fetchmany() batch when streaming full resu
 # UI
 PAGE_SIZE = 20  # report rows per page
 ACCENT_COLOR = "#2E7CF6"
+MAIN_WINDOW_WIDTH = 900
+MAIN_WINDOW_HEIGHT = 620
+APP_ICON_SIZE = 64  # px, square pixmap painted at startup (no bundled asset yet)
+APP_ICON_GLYPH = "S"
+APP_ICON_GLYPH_COLOR = "#FFFFFF"
+
+# Single-instance guard (QLocalServer name; second launch connects and asks to activate)
+SINGLE_INSTANCE_KEY = "com.speedlog.app.single-instance"
+SINGLE_INSTANCE_TIMEOUT_MS = 200  # connect/write timeout when pinging the first instance
 
 
 def data_dir() -> Path:

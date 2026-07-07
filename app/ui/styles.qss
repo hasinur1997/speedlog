@@ -1,1 +1,5 @@
-/* Speedlog Qt stylesheet — populated with UI tickets (Milestone 3+). */
+/* Speedlog Qt stylesheet — keep minimal, respect the native look (docs/ui-context.md). */
+
+QTabWidget#mainTabs::pane {
+    border: none;
+}

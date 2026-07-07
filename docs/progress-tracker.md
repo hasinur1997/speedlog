@@ -25,7 +25,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 ## Milestone 3 — App shell & live view
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
-| NST-401 | App bootstrap & main window shell | TODO | NST-102 | | |
+| NST-401 | App bootstrap & main window shell | DONE | NST-102 | 2026-07-07 | Real main() (logging→single-instance→migrate→styles/icon→window→exec); MainWindow 900x620 Live/Reports tabs, close hides; QLocalServer single-instance w/ activate + stale-socket recovery; 11 tests |
 | NST-402 | System tray icon + live speed text | TODO | NST-401, NST-305 | | |
 | NST-403 | Tray menu (open, quit w/ confirm) | TODO | NST-402 | | |
 | NST-404 | Quit behavior: stop tracking, flush segment | TODO | NST-403, NST-305 | | |
