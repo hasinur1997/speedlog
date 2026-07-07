@@ -20,6 +20,7 @@ BAND_TOLERANCE_FLOOR_BPS = 250_000  # 0.25 MB/s absolute floor, bytes/sec
 HYSTERESIS_TICKS = 5  # consecutive out-of-band samples to split a segment
 MIN_SEGMENT_SECS = 5  # shorter segments merge into a neighbor
 CONNECTIVITY_DEBOUNCE_TICKS = 3  # consecutive identical checks to confirm an online/offline change
+COLLECTOR_JOIN_TIMEOUT_MS = 3000  # max wait for the collector thread to exit after stop()
 
 # Data layer
 DB_FETCH_CHUNK_SIZE = 500  # rows per fetchmany() batch when streaming full result sets

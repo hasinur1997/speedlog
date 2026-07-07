@@ -20,7 +20,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-302 | Smoother: moving average | DONE | NST-301 | 2026-07-07 | Smoother.push(Sample)->SmoothedSample: SMA over SMOOTH_WINDOW, warm-up 1..window, reset(); O(1) deque+running sums; 8 tests |
 | NST-303 | Segmenter: bucketing + hysteresis | DONE | NST-302 | 2026-07-07 | SegmenterParams + Segmenter.push/flush: per-direction band, hysteresis split backdated to first out-of-band tick, incremental means, short segments persisted at flush; 11 tests |
 | NST-304 | Connectivity watcher & sessions | DONE | NST-301, NST-202 | 2026-07-07 | IfStatsSource protocol + ConnectivityWatcher: debounced (3 ticks) online/offline, session open/close via repository, flush+reset on disconnect, dangling recovery at start; 12 tests |
-| NST-305 | CollectorService thread + graceful shutdown | TODO | NST-303, NST-304 | | |
+| NST-305 | CollectorService thread + graceful shutdown | DONE | NST-303, NST-304 | 2026-07-07 | CollectorService(QThread): own DB conn in run(), monotonic 1s loop w/ per-tick try/except, non-blocking stop() → flush + end_session('quit') on collector thread; COLLECTOR_JOIN_TIMEOUT_MS in config; 6 pytest-qt tests |
 
 ## Milestone 3 — App shell & live view
 | ID | Title | Status | Depends on | Done date | Notes |
