@@ -33,6 +33,9 @@ MAIN_WINDOW_HEIGHT = 620
 APP_ICON_SIZE = 64  # px, square pixmap painted at startup (no bundled asset yet)
 APP_ICON_GLYPH = "S"
 APP_ICON_GLYPH_COLOR = "#FFFFFF"
+# Tray tooltip refresh throttle: just under the 1s sample cadence so timing
+# jitter in signal delivery doesn't drop every other update.
+TRAY_TOOLTIP_MIN_INTERVAL_SECS = 0.9
 
 # Single-instance guard (QLocalServer name; second launch connects and asks to activate)
 SINGLE_INSTANCE_KEY = "com.speedlog.app.single-instance"

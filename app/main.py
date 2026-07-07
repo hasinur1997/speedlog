@@ -1,9 +1,8 @@
 """Entry point: QApplication bootstrap (NST-401).
 
 Order: logging → single-instance guard → DB migrate → styles/icon →
-CollectorService (created here; started with the tray wiring in NST-402) →
-main window → exec(). Quitting is tray-driven (NST-403/404); closing the
-window only hides it.
+main window → tray + CollectorService wiring (NST-402) → exec().
+Quitting is tray-driven (NST-403/404); closing the window only hides it.
 """
 
 from __future__ import annotations
@@ -20,6 +19,7 @@ from app import config, logging_setup
 from app.collector.service import CollectorService
 from app.data import db
 from app.ui.main_window import MainWindow, app_icon
+from app.ui.tray import SpeedTrayIcon
 
 logger = logging.getLogger(__name__)
 
@@ -113,8 +113,14 @@ def main() -> int:
     window = MainWindow()
     guard.activate_requested.connect(window.bring_to_front)
 
-    # Created here per NST-401; started + tray-wired in NST-402.
-    window.collector_service = CollectorService()
+    service = CollectorService()
+    window.collector_service = service
+
+    tray = SpeedTrayIcon(window, parent=app)
+    service.speed_sampled.connect(tray.on_speed_sampled)
+    service.session_changed.connect(tray.on_session_changed)
+    tray.show()
+    service.start()
 
     window.show()
     return app.exec()

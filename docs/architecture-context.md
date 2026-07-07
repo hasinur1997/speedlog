@@ -36,6 +36,7 @@ Two logical layers inside one process:
 app/
 ├── main.py                  # entry point, QApplication bootstrap
 ├── config.py                # constants, paths, settings
+├── formatting.py            # format_speed() shared by tray, table, PDF
 ├── logging_setup.py
 ├── collector/
 │   ├── sampler.py           # psutil per-interface byte counters, 1s tick
