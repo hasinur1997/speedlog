@@ -31,13 +31,16 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-404 | Quit behavior: stop tracking, flush segment | DONE | NST-403, NST-305 | 2026-07-07 | `aboutToQuit` now stops + joins the collector, flushes the final segment/session on quit, and startup recovery of dangling sessions is covered by integration tests |
 | NST-501 | Live tab: current speeds + session info | DONE | NST-401, NST-305 | 2026-07-07 | Real LiveView widget with connected-since line, hidden-tab speed caching, and collector/tray signal timestamp wiring; 3 pytest-qt tests added |
 | NST-502 | Live sparkline chart (nice-to-have) | DONE | NST-501 | 2026-07-07 | Rolling 60-sample live chart with hidden-tab redraw pause; pinned pyqtgraph and added pytest-qt coverage |
+| NST-503 | Live tab visual polish | DONE | NST-502, NST-605 | 2026-07-07 | Live tab now renders on a white surfaced panel with cleaner tab states; pytest-qt styling-hook coverage added |
 
 ## Milestone 4 — Reports
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
 | NST-601 | Reports table model + view | DONE | NST-203, NST-401 | 2026-07-07 | ReportsPage + ReportsTableModel landed with empty state, guarded page-1 auto-refresh, and pytest-qt coverage |
-| NST-602 | Pagination (20/page) | TODO | NST-601 | | |
-| NST-603 | Formatting: time ranges, units, empty state | TODO | NST-601 | | |
+| NST-602 | Pagination (20/page) | DONE | NST-601 | 2026-07-07 | Reports page now shows Prev/Next + count labels, preserves page across tab switches, and resets to page 1 on filter changes; pytest-qt coverage added |
+| NST-604 | Numbered pagination links | DONE | NST-602 | 2026-07-07 | Reports pagination now includes direct page links with collapsed `...` gaps for larger result sets; direct-jump pytest-qt coverage added |
+| NST-605 | Reports table and tabs visual polish | DONE | NST-604, NST-401 | 2026-07-07 | Main tabs now render as polished segmented controls, and the reports page uses a surfaced layout with refined table/pagination styling; pytest-qt coverage added |
+| NST-603 | Formatting: time ranges, units, empty state | DONE | NST-601 | 2026-07-07 | Shared report date/time formatting now lives in `app.formatting`, including midnight rollover markers and DST-safe local rendering; table/PDF wiring + tests added |
 | NST-701 | Filter panel UI (4 modes) | TODO | NST-601 | | |
 | NST-702 | Filter → query builder | TODO | NST-701, NST-203 | | |
 | NST-703 | Filter validation, reset, edge cases | TODO | NST-702 | | |

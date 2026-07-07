@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QColor, QIcon, QPainter, QPixmap
-from PySide6.QtWidgets import QMainWindow, QTabWidget
+from PySide6.QtWidgets import QMainWindow, QTabWidget, QVBoxLayout, QWidget
 
 from app import config
 from app.ui.live_view import LiveView
@@ -44,13 +44,28 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(app_icon())
         self.resize(config.MAIN_WINDOW_WIDTH, config.MAIN_WINDOW_HEIGHT)
 
-        self.tabs = QTabWidget(self)
+        content = QWidget(self)
+        content.setObjectName("mainWindowContent")
+        content.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(
+            config.MAIN_WINDOW_CONTENT_MARGIN,
+            config.MAIN_WINDOW_CONTENT_MARGIN,
+            config.MAIN_WINDOW_CONTENT_MARGIN,
+            config.MAIN_WINDOW_CONTENT_MARGIN,
+        )
+        content_layout.setSpacing(config.MAIN_WINDOW_CONTENT_MARGIN)
+
+        self.tabs = QTabWidget(content)
         self.tabs.setObjectName("mainTabs")
+        self.tabs.setDocumentMode(True)
+        self.tabs.tabBar().setExpanding(False)
         self.live_view = LiveView(self.tabs)
         self.reports_page = ReportsPage(self.tabs, db_path=reports_db_path)
         self.tabs.addTab(self.live_view, "Live")
         self.tabs.addTab(self.reports_page, "Reports")
-        self.setCentralWidget(self.tabs)
+        content_layout.addWidget(self.tabs)
+        self.setCentralWidget(content)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Hide instead of closing — the app keeps tracking in the tray."""

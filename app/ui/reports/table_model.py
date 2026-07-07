@@ -2,46 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from zoneinfo import ZoneInfo
-
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from app.data.models import SpeedRecord
-from app.formatting import format_speed
+from app.formatting import format_date, format_speed, format_time_range
 
 _HEADERS = ("Date", "Time", "Download", "Upload")
-
-
-def _local_zone() -> ZoneInfo | None:
-    """Best-effort local timezone; prefer a real ``ZoneInfo`` when available."""
-    tzinfo = datetime.now().astimezone().tzinfo
-    if isinstance(tzinfo, ZoneInfo):
-        return tzinfo
-    key = getattr(tzinfo, "key", None)
-    if isinstance(key, str):
-        return ZoneInfo(key)
-    return None
-
-
-def _local_datetime(ts: int) -> datetime:
-    dt = datetime.fromtimestamp(ts, tz=UTC)
-    local_zone = _local_zone()
-    if local_zone is not None:
-        return dt.astimezone(local_zone)
-    return dt.astimezone()
-
-
-def _format_date(ts: int) -> str:
-    return _local_datetime(ts).strftime("%Y-%m-%d")
-
-
-def _format_time(ts: int) -> str:
-    return _local_datetime(ts).strftime("%I:%M %p").lstrip("0")
-
-
-def _format_time_range(start_ts: int, end_ts: int) -> str:
-    return f"{_format_time(start_ts)} – {_format_time(end_ts)}"
 
 
 class ReportsTableModel(QAbstractTableModel):
@@ -69,9 +35,9 @@ class ReportsTableModel(QAbstractTableModel):
 
         if role == Qt.ItemDataRole.DisplayRole:
             if column == 0:
-                return _format_date(record.start_ts)
+                return format_date(record.start_ts)
             if column == 1:
-                return _format_time_range(record.start_ts, record.end_ts)
+                return format_time_range(record.start_ts, record.end_ts)
             if column == 2:
                 return format_speed(record.download_bps)
             if column == 3:

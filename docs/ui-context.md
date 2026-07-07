@@ -18,6 +18,8 @@
 
 ### 2) Main window (900×620 default, resizable)
 Sidebar-less, two tabs (QTabWidget or segmented control):
+- Tabs should read like a subtle segmented control with clear active/inactive states and
+  comfortable outer padding around the main content.
 
 **Tab A — Live**
 - Large current speeds: `↓ 5.02 MB/s` / `↑ 1.20 MB/s`
@@ -35,9 +37,11 @@ Layout top→bottom:
    Columns: `Date` | `Time` (e.g. `10:20 AM – 10:30 AM`) | `Download` | `Upload`
    - Sorted by start time DESC by default
    - Read-only, row selection, alternating row colors
+   - Presented inside a rounded report surface with a short title/subtitle for context
    - Empty state label: "No records for the selected filter."
-3. **Pagination bar**: `◀ Prev  Page 3 of 12  Next ▶` + total count label
-   ("231 records"). Page size fixed at 20 for v1 (constant `PAGE_SIZE = 20`).
+3. **Pagination bar**: `◀ Prev  1 2 3 4 5 6 ... 10  Next ▶  Page 3 of 10` +
+   total count label (`"231 records"`). Page size fixed at 20 for v1
+   (constant `PAGE_SIZE = 20`), with direct page links collapsing via ellipses when needed.
 
 ### 3) Export flow
 - Click Export PDF → `QFileDialog.getSaveFileName` default name
@@ -55,6 +59,7 @@ Layout top→bottom:
 ## Styling
 - Single `ui/styles.qss` loaded at startup; keep minimal — respect native look.
 - Accent color: `#2E7CF6`. PDF header highlight uses the same accent.
+- Prefer palette-aware styling so the app still feels native in light/dark appearances.
 - No hardcoded colors in Python; reference constants in `config.py`.
 
 ## Accessibility / quality bar

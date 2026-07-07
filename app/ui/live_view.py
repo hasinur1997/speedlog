@@ -50,6 +50,7 @@ class _LiveSparkline(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("liveSparkline")
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setFixedHeight(config.LIVE_SPARKLINE_HEIGHT)
         self._download_history: deque[float] = deque(maxlen=config.LIVE_SPARKLINE_WINDOW_SAMPLES)
@@ -60,7 +61,12 @@ class _LiveSparkline(QWidget):
         self._upload_curve = None
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(
+            config.LIVE_VIEW_SPACING,
+            config.LIVE_VIEW_SPACING,
+            config.LIVE_VIEW_SPACING,
+            config.LIVE_VIEW_SPACING,
+        )
 
         if pyqtgraph is None:
             fallback = QLabel("Live chart unavailable until pyqtgraph is installed.", self)
@@ -156,23 +162,31 @@ class LiveView(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("liveTab")
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._latest_download_bps = 0.0
         self._latest_upload_bps = 0.0
         self._speed_update_pending = False
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        self.surface = QWidget(self)
+        self.surface.setObjectName("liveSurface")
+        self.surface.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        surface_layout = QVBoxLayout(self.surface)
+        surface_layout.setContentsMargins(
             config.LIVE_VIEW_MARGIN,
             config.LIVE_VIEW_MARGIN,
             config.LIVE_VIEW_MARGIN,
             config.LIVE_VIEW_MARGIN,
         )
-        layout.setSpacing(config.LIVE_VIEW_SPACING)
-        layout.addStretch(1)
+        surface_layout.setSpacing(config.LIVE_VIEW_SPACING)
+        surface_layout.addStretch(1)
 
         self.download_label = self._build_speed_label("downloadSpeedLabel")
         self.upload_label = self._build_speed_label("uploadSpeedLabel")
-        self.session_label = QLabel(OFFLINE_TEXT, self)
+        self.session_label = QLabel(OFFLINE_TEXT, self.surface)
         self.session_label.setObjectName("sessionStatusLabel")
         self.session_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
         session_font = QFont(self.session_label.font())
@@ -182,13 +196,14 @@ class LiveView(QWidget):
             QSizePolicy.Policy.Expanding,
             QSizePolicy.Policy.Preferred,
         )
-        self.sparkline = _LiveSparkline(self)
+        self.sparkline = _LiveSparkline(self.surface)
 
-        layout.addWidget(self.download_label)
-        layout.addWidget(self.upload_label)
-        layout.addWidget(self.session_label)
-        layout.addWidget(self.sparkline)
-        layout.addStretch(1)
+        surface_layout.addWidget(self.download_label)
+        surface_layout.addWidget(self.upload_label)
+        surface_layout.addWidget(self.session_label)
+        surface_layout.addWidget(self.sparkline)
+        surface_layout.addStretch(1)
+        layout.addWidget(self.surface)
 
         self._set_speed_labels(0.0, 0.0)
 
@@ -219,7 +234,7 @@ class LiveView(QWidget):
         self._apply_pending_speed_update()
 
     def _build_speed_label(self, object_name: str) -> QLabel:
-        label = QLabel(self)
+        label = QLabel(self.surface)
         label.setObjectName(object_name)
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)

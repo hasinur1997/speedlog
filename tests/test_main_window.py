@@ -32,11 +32,16 @@ def test_tabs_exist_by_object_name(window: MainWindow) -> None:
     tabs = window.findChild(QTabWidget, "mainTabs")
     assert tabs is not None
     assert tabs.count() == 2
+    assert tabs.documentMode()
+    assert not tabs.tabBar().expanding()
     assert tabs.tabText(0) == "Live"
     assert tabs.tabText(1) == "Reports"
+    assert window.centralWidget() is not None
+    assert window.centralWidget().objectName() == "mainWindowContent"
     live_tab = window.findChild(QWidget, "liveTab")
     assert live_tab is not None
     assert isinstance(live_tab, LiveView)
+    assert live_tab.surface.objectName() == "liveSurface"
     reports_tab = window.findChild(QWidget, "reportsTab")
     assert reports_tab is not None
     assert isinstance(reports_tab, ReportsPage)

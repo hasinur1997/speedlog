@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
 import pytest
+from PySide6.QtCore import Qt
 
 import app.ui.live_view as live_view_module
 from app import config
@@ -27,6 +28,13 @@ def test_speed_sampled_updates_labels_when_visible(live_view: LiveView) -> None:
 
     assert live_view.download_label.text() == "↓ 5.02 MB/s"
     assert live_view.upload_label.text() == "↑ 500.00 KB/s"
+
+
+def test_live_view_exposes_surface_and_chart_styling_hooks(live_view: LiveView) -> None:
+    assert live_view.surface.objectName() == "liveSurface"
+    assert live_view.surface.testAttribute(Qt.WidgetAttribute.WA_StyledBackground)
+    assert live_view.sparkline.parentWidget() is live_view.surface
+    assert live_view.sparkline.testAttribute(Qt.WidgetAttribute.WA_StyledBackground)
 
 
 def test_session_changed_updates_connected_since_and_offline(

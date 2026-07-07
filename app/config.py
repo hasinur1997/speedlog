@@ -27,9 +27,11 @@ DB_FETCH_CHUNK_SIZE = 500  # rows per fetchmany() batch when streaming full resu
 
 # UI
 PAGE_SIZE = 20  # report rows per page
+PAGINATION_MAX_VISIBLE_BUTTONS = 7  # numbered page buttons before collapsing with ellipses
 ACCENT_COLOR = "#2E7CF6"
 MAIN_WINDOW_WIDTH = 900
 MAIN_WINDOW_HEIGHT = 620
+MAIN_WINDOW_CONTENT_MARGIN = 20
 LIVE_VIEW_MARGIN = 36
 LIVE_VIEW_SPACING = 12
 LIVE_SPEED_LABEL_POINT_SIZE = 32
@@ -44,6 +46,9 @@ LIVE_SPARKLINE_Y_PADDING_RATIO = 0.12
 APP_ICON_SIZE = 64  # px, square pixmap painted at startup (no bundled asset yet)
 APP_ICON_GLYPH = "S"
 APP_ICON_GLYPH_COLOR = "#FFFFFF"
+REPORTS_SURFACE_PADDING = 24
+REPORTS_SECTION_SPACING = 18
+REPORTS_TABLE_ROW_HEIGHT = 42
 # Tray tooltip refresh throttle: just under the 1s sample cadence so timing
 # jitter in signal delivery doesn't drop every other update.
 TRAY_TOOLTIP_MIN_INTERVAL_SECS = 0.9
