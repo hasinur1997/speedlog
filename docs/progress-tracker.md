@@ -42,7 +42,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-605 | Reports table and tabs visual polish | DONE | NST-604, NST-401 | 2026-07-07 | Main tabs now render as polished segmented controls, and the reports page uses a surfaced layout with refined table/pagination styling; pytest-qt coverage added |
 | NST-603 | Formatting: time ranges, units, empty state | DONE | NST-601 | 2026-07-07 | Shared report date/time formatting now lives in `app.formatting`, including midnight rollover markers and DST-safe local rendering; table/PDF wiring + tests added |
 | NST-701 | Filter panel UI (4 modes) | DONE | NST-601 | 2026-07-07 | Added reports FilterPanel with typed UI state emission, reset-to-all behavior, and pytest-qt coverage |
-| NST-702 | Filter → query builder | TODO | NST-701, NST-203 | | |
+| NST-702 | Filter → query builder | DONE | NST-701, NST-203 | 2026-07-07 | Added pure local→UTC filter builder, wired Apply/Reset through reports reload, and covered DST/reversed-range cases plus a pytest-qt table integration |
 | NST-703 | Filter validation, reset, edge cases | TODO | NST-702 | | |
 
 ## Milestone 5 — Export & platform

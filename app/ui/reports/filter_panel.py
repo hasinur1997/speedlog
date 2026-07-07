@@ -147,10 +147,11 @@ class FilterPanel(QWidget):
 
     @Slot()
     def reset_filter(self) -> None:
-        """Restore defaults, clear the active filter, and emit an unfiltered state."""
+        """Restore editor defaults and emit "no filter", not a widest-range preset."""
         self.mode_combo.setCurrentIndex(0)
         self._reset_editor_values()
         self._update_editor_visibility(self.mode_combo.currentIndex())
+        # Reset means "show everything" downstream, so emit the empty UI state.
         self.filter_applied.emit(ReportFilterUiState())
 
     @Slot(int)

@@ -22,8 +22,13 @@ from PySide6.QtWidgets import (
 
 from app import config
 from app.data import db
-from app.data.models import ReportFilter
+from app.data.models import ReportFilter, ReportFilterUiState
 from app.data.repository import Repository
+from app.ui.reports.filter_builder import (
+    build_report_filter,
+    summarize_filter_state,
+    summarize_report_filter,
+)
 from app.ui.reports.filter_panel import FilterPanel
 from app.ui.reports.table_model import ReportsTableModel
 
@@ -92,6 +97,7 @@ class ReportsPage(QWidget):
         self._conn: sqlite3.Connection | None = None
         self._repository: Repository | None = None
         self._report_filter = ReportFilter()
+        self._active_filter_ui_state: ReportFilterUiState | None = ReportFilterUiState()
         self._current_page = 1
         self._total_pages = 1
         self._total_records = 0
@@ -133,7 +139,13 @@ class ReportsPage(QWidget):
         surface_layout.addWidget(self.header_widget)
 
         self.filter_panel = FilterPanel(self.surface)
+        self.filter_panel.filter_applied.connect(self._apply_filter_state)
         surface_layout.addWidget(self.filter_panel)
+
+        self.filter_status_label = QLabel(self.surface)
+        self.filter_status_label.setObjectName("reportsFilterStatusLabel")
+        self.filter_status_label.setWordWrap(True)
+        surface_layout.addWidget(self.filter_status_label)
 
         self.model = ReportsTableModel(self)
         self.table = QTableView(self)
@@ -207,6 +219,7 @@ class ReportsPage(QWidget):
 
         surface_layout.addWidget(self.pagination_bar)
         layout.addWidget(self.surface)
+        self._update_filter_status_label()
         self._update_empty_state()
         self._update_pagination_controls()
 
@@ -219,10 +232,24 @@ class ReportsPage(QWidget):
         if not self._loaded_once:
             self.reload_page()
 
-    def set_filter(self, report_filter: ReportFilter) -> None:
-        """Set the active report filter and reset paging to page 1."""
+    def set_filter(
+        self, report_filter: ReportFilter, ui_state: ReportFilterUiState | None = None
+    ) -> None:
+        """Set the active report filter, refresh the status line, and reset to page 1."""
         self._report_filter = report_filter
+        if ui_state is not None:
+            self._active_filter_ui_state = ui_state
+        elif _is_unbounded_filter(report_filter):
+            self._active_filter_ui_state = ReportFilterUiState()
+        else:
+            self._active_filter_ui_state = None
+        self._update_filter_status_label()
         self.reload_page(page=1)
+
+    @Slot(object)
+    def _apply_filter_state(self, ui_state: ReportFilterUiState) -> None:
+        """Convert the filter panel's local-time state into a repository filter."""
+        self.set_filter(build_report_filter(ui_state), ui_state=ui_state)
 
     @Slot()
     def go_to_previous_page(self) -> None:
@@ -297,6 +324,13 @@ class ReportsPage(QWidget):
             return
         self._stack.setCurrentWidget(self.table)
 
+    def _update_filter_status_label(self) -> None:
+        if self._active_filter_ui_state is not None:
+            summary = summarize_filter_state(self._active_filter_ui_state)
+        else:
+            summary = summarize_report_filter(self._report_filter)
+        self.filter_status_label.setText(summary)
+
     def _update_pagination_controls(self) -> None:
         self._rebuild_page_buttons()
         self.page_label.setText(f"Page {self._current_page} of {self._total_pages}")
@@ -331,3 +365,7 @@ class ReportsPage(QWidget):
             button.setChecked(item == self._current_page)
             button.clicked.connect(lambda _checked=False, page=item: self.go_to_page(page))
             self._page_buttons_layout.addWidget(button)
+
+
+def _is_unbounded_filter(report_filter: ReportFilter) -> bool:
+    return report_filter.range_start_ts is None and report_filter.range_end_ts is None

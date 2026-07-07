@@ -6,10 +6,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QDate, QTime, Qt
 from PySide6.QtWidgets import QPushButton
 
 import app.formatting as formatting_module
+import app.ui.reports.filter_builder as filter_builder_module
 from app import config
 from app.data import db
 from app.data.models import ReportFilter, SpeedRecord
@@ -96,6 +97,48 @@ def _seed_records(db_file: Path, count: int) -> None:
         conn.close()
 
 
+def _seed_filter_records(db_file: Path) -> None:
+    conn = db.get_connection(db_file)
+    try:
+        db.migrate(conn)
+        repo = Repository(conn)
+        july_6_start = int(datetime(2026, 7, 6, 12, 0, tzinfo=UTC).timestamp())
+        july_7_start = int(datetime(2026, 7, 7, 12, 0, tzinfo=UTC).timestamp())
+        session_id = repo.start_session(july_6_start)
+
+        for index in range(5):
+            start_ts = july_6_start + (index * RECORD_SPACING_SECS)
+            repo.insert_record(
+                SpeedRecord(
+                    session_id=session_id,
+                    start_ts=start_ts,
+                    end_ts=start_ts + RECORD_DURATION_SECS,
+                    download_bps=1_000_000.0 + index,
+                    upload_bps=500_000.0 + index,
+                )
+            )
+
+        for index in range(config.PAGE_SIZE):
+            start_ts = july_7_start + (index * RECORD_SPACING_SECS)
+            repo.insert_record(
+                SpeedRecord(
+                    session_id=session_id,
+                    start_ts=start_ts,
+                    end_ts=start_ts + RECORD_DURATION_SECS,
+                    download_bps=2_000_000.0 + index,
+                    upload_bps=750_000.0 + index,
+                )
+            )
+
+        repo.end_session(
+            session_id,
+            july_7_start + ((config.PAGE_SIZE - 1) * RECORD_SPACING_SECS) + RECORD_DURATION_SECS,
+            "quit",
+        )
+    finally:
+        conn.close()
+
+
 def test_reports_table_model_exposes_headers_and_page_data(monkeypatch) -> None:
     monkeypatch.setattr(formatting_module, "_local_zone", lambda: ZoneInfo("UTC"))
     model = ReportsTableModel()
@@ -137,6 +180,8 @@ def test_reports_page_exposes_visual_polish_hooks(qtbot, tmp_path: Path) -> None
     assert (
         page.filter_panel.mode_combo.toolTip() == "Choose how the reports table should be filtered."
     )
+    assert page.filter_status_label.objectName() == "reportsFilterStatusLabel"
+    assert page.filter_status_label.text() == "Showing all records"
     assert page.title_label.text() == "Connection History"
     assert "move through pages" in page.subtitle_label.text()
     assert page.table_area.objectName() == "reportsTableArea"
@@ -343,3 +388,187 @@ def test_reports_page_filter_change_resets_to_first_page(qtbot, tmp_path: Path) 
     assert page.count_label.text() == "1 record"
     assert not page.prev_button.isEnabled()
     assert not page.next_button.isEnabled()
+
+
+def test_reports_page_apply_date_filter_reloads_table_and_resets_page(
+    qtbot, tmp_path: Path, monkeypatch
+) -> None:
+    db_file = tmp_path / "reports.db"
+    _seed_filter_records(db_file)
+    monkeypatch.setattr(filter_builder_module, "_local_zone", lambda: ZoneInfo("UTC"))
+
+    page = ReportsPage(db_path=db_file)
+    qtbot.addWidget(page)
+    page.show()
+    qtbot.waitExposed(page)
+    qtbot.waitUntil(lambda: page.model.rowCount() == config.PAGE_SIZE, timeout=1000)
+
+    assert page.count_label.text() == "25 records"
+
+    qtbot.mouseClick(page.next_button, Qt.MouseButton.LeftButton)
+    qtbot.waitUntil(lambda: page.current_page == 2, timeout=1000)
+    assert page.model.rowCount() == 5
+    assert page.page_label.text() == "Page 2 of 2"
+
+    page.filter_panel.mode_combo.setCurrentText("Date")
+    page.filter_panel.primary_date_edit.setDate(QDate(2026, 7, 7))
+    qtbot.mouseClick(page.filter_panel.apply_button, Qt.MouseButton.LeftButton)
+
+    qtbot.waitUntil(
+        lambda: page.current_page == 1 and page.count_label.text() == "20 records",
+        timeout=1000,
+    )
+    assert page.model.rowCount() == config.PAGE_SIZE
+    assert page.page_label.text() == "Page 1 of 1"
+    assert all(
+        page.model.data(page.model.index(row, 0), Qt.ItemDataRole.DisplayRole) == "2026-07-07"
+        for row in range(page.model.rowCount())
+    )
+    assert page.filter_status_label.text() == "Filtered: 2026-07-07"
+
+
+def test_reports_page_reset_returns_to_no_filter_page_one(qtbot, tmp_path: Path, monkeypatch) -> None:
+    db_file = tmp_path / "reports.db"
+    _seed_filter_records(db_file)
+    monkeypatch.setattr(filter_builder_module, "_local_zone", lambda: ZoneInfo("UTC"))
+
+    page = ReportsPage(db_path=db_file)
+    qtbot.addWidget(page)
+    page.show()
+    qtbot.waitExposed(page)
+    qtbot.waitUntil(lambda: page.model.rowCount() == config.PAGE_SIZE, timeout=1000)
+
+    qtbot.mouseClick(page.next_button, Qt.MouseButton.LeftButton)
+    qtbot.waitUntil(lambda: page.current_page == 2, timeout=1000)
+
+    page.filter_panel.mode_combo.setCurrentText("Date")
+    page.filter_panel.primary_date_edit.setDate(QDate(2026, 7, 7))
+    qtbot.mouseClick(page.filter_panel.apply_button, Qt.MouseButton.LeftButton)
+    qtbot.waitUntil(
+        lambda: page.current_page == 1 and page.count_label.text() == "20 records",
+        timeout=1000,
+    )
+
+    qtbot.mouseClick(page.filter_panel.reset_button, Qt.MouseButton.LeftButton)
+
+    qtbot.waitUntil(
+        lambda: page.current_page == 1 and page.count_label.text() == "25 records",
+        timeout=1000,
+    )
+    assert page.model.rowCount() == config.PAGE_SIZE
+    assert page.page_label.text() == "Page 1 of 2"
+    assert page.filter_status_label.text() == "Showing all records"
+
+
+def test_reports_page_future_date_filter_shows_clean_empty_state(
+    qtbot, tmp_path: Path, monkeypatch
+) -> None:
+    db_file = tmp_path / "reports.db"
+    _seed_filter_records(db_file)
+    monkeypatch.setattr(filter_builder_module, "_local_zone", lambda: ZoneInfo("UTC"))
+
+    page = ReportsPage(db_path=db_file)
+    qtbot.addWidget(page)
+    page.show()
+    qtbot.waitExposed(page)
+    qtbot.waitUntil(lambda: page.model.rowCount() == config.PAGE_SIZE, timeout=1000)
+
+    page.filter_panel.mode_combo.setCurrentText("Date")
+    page.filter_panel.primary_date_edit.setDate(QDate(2035, 1, 1))
+    qtbot.mouseClick(page.filter_panel.apply_button, Qt.MouseButton.LeftButton)
+
+    qtbot.waitUntil(lambda: page.count_label.text() == "0 records", timeout=1000)
+    assert page.model.rowCount() == 0
+    assert page.empty_state_label.isVisible()
+    assert not page.table.isVisible()
+    assert page.page_label.text() == "Page 1 of 1"
+    assert page.filter_status_label.text() == "Filtered: 2035-01-01"
+
+
+def test_reports_page_date_time_filter_is_inclusive_at_record_boundaries(
+    qtbot, tmp_path: Path, monkeypatch
+) -> None:
+    db_file = tmp_path / "reports.db"
+    start_ts = int(datetime(2026, 7, 7, 9, 15, tzinfo=UTC).timestamp())
+    _insert_record(
+        db_file,
+        start_ts=start_ts,
+        end_ts=int(datetime(2026, 7, 7, 9, 45, tzinfo=UTC).timestamp()),
+        download_bps=5_000_000.0,
+        upload_bps=1_000_000.0,
+    )
+    monkeypatch.setattr(filter_builder_module, "_local_zone", lambda: ZoneInfo("UTC"))
+
+    page = ReportsPage(db_path=db_file)
+    qtbot.addWidget(page)
+    page.show()
+    qtbot.waitExposed(page)
+    qtbot.waitUntil(lambda: page.count_label.text() == "1 record", timeout=1000)
+
+    page.filter_panel.mode_combo.setCurrentText("Date + Time")
+    page.filter_panel.primary_date_edit.setDate(QDate(2026, 7, 7))
+    page.filter_panel.primary_time_edit.setTime(QTime(9, 15))
+    qtbot.mouseClick(page.filter_panel.apply_button, Qt.MouseButton.LeftButton)
+
+    qtbot.waitUntil(lambda: page.count_label.text() == "1 record", timeout=1000)
+    assert page.model.rowCount() == 1
+    assert page.filter_status_label.text() == "Filtered: 2026-07-07 at 9:15 AM"
+
+    page.filter_panel.primary_time_edit.setTime(QTime(9, 45))
+    qtbot.mouseClick(page.filter_panel.apply_button, Qt.MouseButton.LeftButton)
+
+    qtbot.waitUntil(lambda: page.count_label.text() == "1 record", timeout=1000)
+    assert page.model.rowCount() == 1
+    assert page.filter_status_label.text() == "Filtered: 2026-07-07 at 9:45 AM"
+
+
+def test_reports_page_filter_state_persists_across_tabs_but_not_restart(
+    qtbot, tmp_path: Path, monkeypatch
+) -> None:
+    db_file = tmp_path / "reports.db"
+    _seed_filter_records(db_file)
+    monkeypatch.setattr(filter_builder_module, "_local_zone", lambda: ZoneInfo("UTC"))
+
+    window = MainWindow(reports_db_path=db_file)
+    qtbot.addWidget(window)
+    window.show()
+    qtbot.waitExposed(window)
+
+    window.tabs.setCurrentWidget(window.reports_page)
+    qtbot.waitUntil(
+        lambda: window.reports_page.count_label.text() == "25 records",
+        timeout=1000,
+    )
+
+    window.reports_page.filter_panel.mode_combo.setCurrentText("Date + Time")
+    window.reports_page.filter_panel.primary_date_edit.setDate(QDate(2026, 7, 7))
+    window.reports_page.filter_panel.primary_time_edit.setTime(QTime(12, 5))
+    qtbot.mouseClick(window.reports_page.filter_panel.apply_button, Qt.MouseButton.LeftButton)
+
+    qtbot.waitUntil(
+        lambda: window.reports_page.count_label.text() == "1 record",
+        timeout=1000,
+    )
+    assert window.reports_page.filter_status_label.text() == "Filtered: 2026-07-07 at 12:05 PM"
+
+    window.tabs.setCurrentWidget(window.live_view)
+    window.tabs.setCurrentWidget(window.reports_page)
+
+    assert window.reports_page.filter_panel.mode_combo.currentText() == "Date + Time"
+    assert window.reports_page.filter_panel.primary_date_edit.date() == QDate(2026, 7, 7)
+    assert window.reports_page.filter_panel.primary_time_edit.time() == QTime(12, 5)
+    assert window.reports_page.count_label.text() == "1 record"
+    assert window.reports_page.filter_status_label.text() == "Filtered: 2026-07-07 at 12:05 PM"
+
+    restarted_window = MainWindow(reports_db_path=db_file)
+    qtbot.addWidget(restarted_window)
+    restarted_window.show()
+    qtbot.waitExposed(restarted_window)
+    restarted_window.tabs.setCurrentWidget(restarted_window.reports_page)
+
+    qtbot.waitUntil(
+        lambda: restarted_window.reports_page.count_label.text() == "25 records",
+        timeout=1000,
+    )
+    assert restarted_window.reports_page.filter_panel.mode_combo.currentText() == "Date"
+    assert restarted_window.reports_page.filter_status_label.text() == "Showing all records"

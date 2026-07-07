@@ -108,6 +108,11 @@ QLabel#reportsSubtitleLabel {
     font-size: 13px;
 }
 
+QLabel#reportsFilterStatusLabel {
+    color: palette(text);
+    font-weight: 600;
+}
+
 QWidget#reportsFilterPanel QComboBox,
 QWidget#reportsFilterPanel QDateEdit,
 QWidget#reportsFilterPanel QTimeEdit {
