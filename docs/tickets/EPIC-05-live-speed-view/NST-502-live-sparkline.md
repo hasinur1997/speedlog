@@ -4,7 +4,7 @@
 - **Type:** Feature
 - **Priority:** P3
 - **Estimate:** M
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** NST-501
 
 ## Description
@@ -19,4 +19,8 @@ Rolling 60-sample chart of download/upload under the live numbers.
 ## Test plan
 pytest-qt smoke: widget accepts 200 pushes without error; buffer capped at 60.
 
-## Implementation notes (fill after DONE)
+## Implementation notes
+- Added `pyqtgraph==0.13.7` to `requirements.txt` for the sparkline dependency required by this ticket.
+- Extended `app/ui/live_view.py` with a rolling 60-sample download/upload sparkline that auto-scales its Y range and redraws only while the Live tab is visible.
+- The sparkline buffer continues collecting samples while hidden, then redraws once on re-show so label/chart state catches up without background repaint churn.
+- Added pytest-qt coverage in `tests/test_live_view.py` for the 60-sample cap, repeated sample pushes, and hidden-tab redraw pausing.
