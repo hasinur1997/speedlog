@@ -1,17 +1,61 @@
-"""Tests for app.main bootstrap pieces (NST-401)."""
+"""Tests for app.main bootstrap pieces (NST-401, NST-404)."""
 
 from __future__ import annotations
 
+import sqlite3
+import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
+from pathlib import Path
 
 import pytest
 from PySide6.QtNetwork import QLocalServer
 from PySide6.QtWidgets import QApplication
 
-from app.main import SingleInstanceGuard, configure_application, load_styles
+from app import config
+from app.collector.service import CollectorService
+from app.main import (
+    SingleInstanceGuard,
+    configure_application,
+    install_quit_shutdown,
+    load_styles,
+)
 
 SIGNAL_TIMEOUT_MS = 3000
+INTERVAL = 0.05
+
+
+class FakeShutdownService:
+    def __init__(self) -> None:
+        self.stop_calls = 0
+        self.wait_calls: list[int] = []
+
+    def stop(self) -> None:
+        self.stop_calls += 1
+
+    def wait(self, msecs: int) -> bool:
+        self.wait_calls.append(msecs)
+        return True
+
+
+class FakeCounters:
+    def __init__(self, step: int = 100_000) -> None:
+        self._step = step
+        self._recv = 0
+        self._sent = 0
+
+    def read_counters(self) -> tuple[int, int]:
+        self._recv += self._step
+        self._sent += self._step
+        return self._recv, self._sent
+
+
+class FakeIfStats:
+    def __init__(self, online: bool = True) -> None:
+        self.online = online
+
+    def read_if_stats(self) -> Mapping[str, bool]:
+        return {"en0": self.online, "lo0": True}
 
 
 def _guard_key() -> str:
@@ -43,6 +87,18 @@ def make_guard() -> Callable[[str], SingleInstanceGuard]:
     yield _make
     for guard in guards:
         guard.release()
+
+
+def _disconnect_about_to_quit_handler(qapp: QApplication, handler: Callable[[], None]) -> None:
+    try:
+        qapp.aboutToQuit.disconnect(handler)
+    except (RuntimeError, TypeError):
+        pass
+
+
+def _run_quit_cycle(qtbot, qapp: QApplication) -> None:
+    with qtbot.waitSignal(qapp.aboutToQuit, timeout=SIGNAL_TIMEOUT_MS):
+        qapp.aboutToQuit.emit()
 
 
 def test_configure_application_sets_quit_policy_and_styles(qapp: QApplication) -> None:
@@ -84,3 +140,64 @@ def test_release_allows_reacquisition(make_guard) -> None:
 
     second = make_guard(key)
     assert second.try_acquire() is True
+
+
+def test_install_quit_shutdown_stops_and_waits_on_about_to_quit(qtbot, qapp: QApplication) -> None:
+    service = FakeShutdownService()
+    handler = install_quit_shutdown(qapp, service)
+
+    try:
+        _run_quit_cycle(qtbot, qapp)
+    finally:
+        _disconnect_about_to_quit_handler(qapp, handler)
+
+    assert service.stop_calls == 1
+    assert service.wait_calls == [config.COLLECTOR_JOIN_TIMEOUT_MS]
+
+
+def test_about_to_quit_flushes_open_segment_and_quit_session(
+    qtbot, qapp: QApplication, tmp_path: Path
+) -> None:
+    db_file = tmp_path / "data.db"
+    service = CollectorService(
+        db_path=db_file,
+        sampler_source=FakeCounters(),
+        if_stats_source=FakeIfStats(),
+        interval=INTERVAL,
+    )
+    handler = install_quit_shutdown(qapp, service)
+
+    try:
+        with qtbot.waitSignal(service.speed_sampled, timeout=SIGNAL_TIMEOUT_MS):
+            service.start()
+
+        quit_started_at = int(time.time())
+        _run_quit_cycle(qtbot, qapp)
+        quit_finished_at = int(time.time())
+
+        assert service.isFinished()
+        assert not service.isRunning()
+
+        conn = sqlite3.connect(db_file)
+        try:
+            session = conn.execute(
+                "SELECT end_ts, end_reason FROM sessions ORDER BY id DESC LIMIT 1"
+            ).fetchone()
+            record = conn.execute(
+                "SELECT end_ts FROM speed_records ORDER BY id DESC LIMIT 1"
+            ).fetchone()
+        finally:
+            conn.close()
+    finally:
+        service.stop()
+        service.wait(config.COLLECTOR_JOIN_TIMEOUT_MS)
+        _disconnect_about_to_quit_handler(qapp, handler)
+
+    assert session is not None
+    assert record is not None
+    session_end_ts, end_reason = session
+    (record_end_ts,) = record
+    assert end_reason == "quit"
+    assert quit_started_at <= session_end_ts <= quit_finished_at
+    assert quit_started_at <= record_end_ts <= quit_finished_at
+    assert record_end_ts == session_end_ts

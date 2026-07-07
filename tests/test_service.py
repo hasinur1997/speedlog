@@ -17,6 +17,8 @@ import pytest
 
 from app import config
 from app.collector.service import CollectorService
+from app.data import db
+from app.data.repository import Repository
 
 INTERVAL = 0.05  # fast test cadence; gap factor keeps real-time jitter tolerable
 SIGNAL_TIMEOUT_MS = 3000
@@ -135,6 +137,52 @@ def test_stop_while_offline_closes_no_session(qtbot, make_service) -> None:
         conn.close()
     assert session_count == 0
     assert record_count == 0
+
+
+def test_start_recovers_dangling_session_from_previous_crash(qtbot, tmp_path: Path) -> None:
+    db_file = tmp_path / "data.db"
+    conn = db.get_connection(db_file)
+    try:
+        db.migrate(conn)
+        repo = Repository(conn)
+        dangling_id = repo.start_session(1_700_000_000)
+    finally:
+        conn.close()
+
+    service = CollectorService(
+        db_path=db_file,
+        sampler_source=FakeCounters(),
+        if_stats_source=FakeIfStats(),
+        interval=INTERVAL,
+    )
+    try:
+        with qtbot.waitSignal(service.session_changed, timeout=SIGNAL_TIMEOUT_MS) as blocker:
+            service.start()
+
+        assert blocker.args == [True, dangling_id + 1]
+
+        service.stop()
+        assert service.wait(config.COLLECTOR_JOIN_TIMEOUT_MS)
+    finally:
+        service.stop()
+        service.wait(config.COLLECTOR_JOIN_TIMEOUT_MS)
+
+    conn = sqlite3.connect(db_file)
+    try:
+        sessions = conn.execute(
+            "SELECT id, start_ts, end_ts, end_reason FROM sessions ORDER BY id"
+        ).fetchall()
+    finally:
+        conn.close()
+
+    assert len(sessions) == 2
+    assert sessions[0][0] == dangling_id
+    assert sessions[0][2] is not None
+    assert sessions[0][3] == "quit"
+    assert sessions[1][0] == dangling_id + 1
+    assert sessions[1][1] >= sessions[0][2]
+    assert sessions[1][2] is not None
+    assert sessions[1][3] == "quit"
 
 
 def test_tick_errors_are_survived(qtbot, make_service) -> None:

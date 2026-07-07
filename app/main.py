@@ -1,17 +1,19 @@
-"""Entry point: QApplication bootstrap (NST-401).
+"""Entry point: QApplication bootstrap (NST-401, NST-404).
 
 Order: logging → single-instance guard → DB migrate → styles/icon →
-main window → tray + CollectorService wiring (NST-402) → exec().
-Quitting is tray-driven (NST-403): the tray's confirmed quit calls
-QApplication.quit(); the flush-on-quit shutdown path is NST-404.
-Closing the window only hides it.
+main window → tray + CollectorService wiring → exec().
+Closing the window only hides it; quitting runs through
+``QApplication.aboutToQuit`` so the collector thread flushes, closes the
+session, and joins before the process exits.
 """
 
 from __future__ import annotations
 
 import logging
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Protocol
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
@@ -26,6 +28,18 @@ from app.ui.tray import SpeedTrayIcon
 logger = logging.getLogger(__name__)
 
 _STYLES_PATH = Path(__file__).parent / "ui" / "styles.qss"
+
+
+class _ShutdownService(Protocol):
+    """Minimal collector surface the app shutdown hook needs."""
+
+    def stop(self) -> None:
+        """Request the collector thread to stop."""
+        ...
+
+    def wait(self, msecs: int) -> bool:
+        """Block until the collector thread exits, or the timeout elapses."""
+        ...
 
 
 class SingleInstanceGuard(QObject):
@@ -99,6 +113,22 @@ def migrate_database() -> None:
         conn.close()
 
 
+def install_quit_shutdown(app: QApplication, service: _ShutdownService) -> Callable[[], None]:
+    """Stop and join the collector when Qt begins application shutdown."""
+
+    def _on_about_to_quit() -> None:
+        service.stop()
+        if not service.wait(config.COLLECTOR_JOIN_TIMEOUT_MS):
+            logger.warning(
+                "Collector thread did not stop within %d ms",
+                config.COLLECTOR_JOIN_TIMEOUT_MS,
+            )
+
+    app.aboutToQuit.connect(_on_about_to_quit)
+    app._collector_shutdown_handler = _on_about_to_quit
+    return _on_about_to_quit
+
+
 def main() -> int:
     """Start the Qt application."""
     logging_setup.configure(debug=False)
@@ -117,6 +147,7 @@ def main() -> int:
 
     service = CollectorService()
     window.collector_service = service
+    install_quit_shutdown(app, service)
 
     tray = SpeedTrayIcon(window, parent=app)
     service.speed_sampled.connect(tray.on_speed_sampled)
@@ -126,7 +157,10 @@ def main() -> int:
     service.start()
 
     window.show()
-    return app.exec()
+    try:
+        return app.exec()
+    finally:
+        guard.release()
 
 
 if __name__ == "__main__":
