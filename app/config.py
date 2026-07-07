@@ -46,6 +46,9 @@ LIVE_SPARKLINE_Y_PADDING_RATIO = 0.12
 APP_ICON_SIZE = 64  # px, square pixmap painted at startup (no bundled asset yet)
 APP_ICON_GLYPH = "S"
 APP_ICON_GLYPH_COLOR = "#FFFFFF"
+# Tray/menu-bar template icon (live speed lives in the tray menu's first row)
+TRAY_PIXMAP_HEIGHT = 22  # logical px; matches the macOS status bar image height
+TRAY_PIXMAP_SCALE = 2  # retina backing scale for crisp menu-bar rendering
 REPORTS_SURFACE_PADDING = 24
 REPORTS_SECTION_SPACING = 18
 REPORTS_FILTER_BAR_SPACING = 10
@@ -78,6 +81,7 @@ PDF_TABLE_HEADER_COLOR = "#EAF1FE"
 PDF_TABLE_BORDER_COLOR = "#D6E2F5"
 PDF_ROW_STRIPE_COLOR = "#F7FAFF"
 PDF_FOOTER_TEXT_COLOR = "#5C6B7F"
+EXPORT_NOTIFY_TIMEOUT_MS = 5000  # how long the export-finished tray notification stays up
 
 # Single-instance guard (QLocalServer name; second launch connects and asks to activate)
 SINGLE_INSTANCE_KEY = "com.speedlog.app.single-instance"

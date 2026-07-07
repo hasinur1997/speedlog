@@ -141,11 +141,13 @@ QLabel#reportsFilterStatusLabel {
     font-weight: 600;
 }
 
-/* --- Filter controls -------------------------------------------------------- */
+/* --- Filter & export editors (class-wide: filter panel + export dialog) ------ */
+/* Icon urls are written as url(icons/...) and resolved to absolute paths by
+ * app.main.load_styles(); SVG sources live in app/ui/icons/. */
 
-QWidget#reportsFilterPanel QComboBox,
-QWidget#reportsFilterPanel QDateEdit,
-QWidget#reportsFilterPanel QTimeEdit {
+QComboBox,
+QDateEdit,
+QTimeEdit {
     min-height: 30px;
     background: white;
     color: #1A2433;
@@ -154,24 +156,133 @@ QWidget#reportsFilterPanel QTimeEdit {
     padding: 0 12px;
 }
 
-QWidget#reportsFilterPanel QComboBox:hover,
-QWidget#reportsFilterPanel QDateEdit:hover,
-QWidget#reportsFilterPanel QTimeEdit:hover {
+QComboBox:hover,
+QDateEdit:hover,
+QTimeEdit:hover {
     border-color: #B9C6D8;
 }
 
-QWidget#reportsFilterPanel QComboBox:focus,
-QWidget#reportsFilterPanel QDateEdit:focus,
-QWidget#reportsFilterPanel QTimeEdit:focus,
-QWidget#reportsFilterPanel QComboBox:on {
+QComboBox:focus,
+QDateEdit:focus,
+QTimeEdit:focus,
+QComboBox:on {
     border-color: #2E7CF6;
 }
 
-QWidget#reportsFilterPanel QComboBox::drop-down,
-QWidget#reportsFilterPanel QDateEdit::drop-down,
-QWidget#reportsFilterPanel QTimeEdit::drop-down {
+QComboBox::drop-down {
     border: none;
     width: 24px;
+}
+
+QComboBox::down-arrow {
+    image: url(icons/chevron-down.svg);
+}
+
+/* Date fields: manual typing stays, the calendar glyph advertises the popup. */
+QDateEdit::drop-down {
+    subcontrol-origin: border;
+    subcontrol-position: center right;
+    width: 28px;
+    border: none;
+    image: url(icons/calendar.svg);
+}
+
+/* Time fields: clock glyph (left padding baked into the SVG viewBox) plus
+ * chevron steppers; manual typing stays. */
+QTimeEdit {
+    padding-left: 28px;
+    background-image: url(icons/clock.svg);
+    background-repeat: no-repeat;
+    background-position: left center;
+}
+
+QTimeEdit::up-button,
+QTimeEdit::down-button {
+    subcontrol-origin: border;
+    width: 22px;
+    border: none;
+    background: transparent;
+}
+
+QTimeEdit::up-button {
+    subcontrol-position: top right;
+    margin: 3px 4px 0 0;
+    image: url(icons/chevron-up.svg);
+}
+
+QTimeEdit::down-button {
+    subcontrol-position: bottom right;
+    margin: 0 4px 3px 0;
+    image: url(icons/chevron-down.svg);
+}
+
+/* --- Calendar popup ----------------------------------------------------------- */
+
+QCalendarWidget {
+    background: white;
+}
+
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background: #F7F9FC;
+    border: none;
+    border-bottom: 1px solid #EBF0F6;
+}
+
+QCalendarWidget QToolButton {
+    background: transparent;
+    color: #1A2433;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin: 2px;
+    font-weight: 600;
+}
+
+QCalendarWidget QToolButton:hover {
+    background: #E4EAF2;
+}
+
+QCalendarWidget QToolButton:pressed {
+    background: #D5DDE8;
+}
+
+QCalendarWidget QToolButton::menu-indicator {
+    image: none;
+}
+
+QCalendarWidget QToolButton#qt_calendar_prevmonth {
+    qproperty-icon: url(icons/chevron-left.svg);
+}
+
+QCalendarWidget QToolButton#qt_calendar_nextmonth {
+    qproperty-icon: url(icons/chevron-right.svg);
+}
+
+QCalendarWidget QMenu {
+    background: white;
+    color: #1A2433;
+    border: 1px solid #D5DDE8;
+}
+
+QCalendarWidget QSpinBox {
+    background: white;
+    color: #1A2433;
+    border: 1px solid #D5DDE8;
+    border-radius: 6px;
+    padding: 0 4px;
+}
+
+QCalendarWidget QAbstractItemView:enabled {
+    background: white;
+    color: #1A2433;
+    alternate-background-color: white;
+    selection-background-color: #2E7CF6;
+    selection-color: white;
+    outline: 0;
+}
+
+QCalendarWidget QAbstractItemView:disabled {
+    color: #94A3B8;
 }
 
 /* --- Buttons ---------------------------------------------------------------- */

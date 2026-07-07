@@ -25,6 +25,9 @@ def test_filter_panel_switches_visible_editors_by_mode(qtbot) -> None:
     ]
     assert panel.primary_date_edit.calendarPopup()
     assert panel.end_date_edit.calendarPopup()
+    for time_edit in (panel.primary_time_edit, panel.start_time_edit, panel.end_time_edit):
+        assert time_edit.buttonSymbols() == time_edit.ButtonSymbols.UpDownArrows
+        assert not time_edit.isReadOnly()
     assert panel.primary_date_edit.isVisible()
     assert not panel.end_date_edit.isVisible()
     assert not panel.primary_time_edit.isVisible()

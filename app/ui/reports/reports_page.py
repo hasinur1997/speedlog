@@ -10,11 +10,21 @@ from datetime import UTC, datetime, time
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, QUrl, Signal, Slot
+from PySide6.QtCore import (
+    QObject,
+    QRunnable,
+    QStandardPaths,
+    Qt,
+    QThreadPool,
+    QUrl,
+    Signal,
+    Slot,
+)
 from PySide6.QtGui import QDesktopServices, QShowEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
+    QDialog,
     QFileDialog,
     QHBoxLayout,
     QHeaderView,
@@ -35,6 +45,7 @@ from app.data.models import ReportFilter, ReportFilterUiState
 from app.data.repository import Repository
 from app.export.pdf_report import generate_report
 from app.platform.userinfo import get_full_name
+from app.ui.reports.export_dialog import ExportOptionsDialog
 from app.ui.reports.filter_builder import (
     build_report_filter,
     summarize_filter_state,
@@ -241,9 +252,17 @@ def _default_export_filename(report_filter: ReportFilter) -> str:
     return f"{config.APP_NAME}-Report-{from_token}_{to_token}.pdf"
 
 
+def _downloads_dir() -> Path:
+    """Platform Downloads folder, falling back to the home directory."""
+    location = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DownloadLocation)
+    if location:
+        return Path(location)
+    return Path.home()
+
+
 def _default_export_path(report_filter: ReportFilter) -> Path:
     """Return the default save location for a PDF export."""
-    return Path.home() / _default_export_filename(report_filter)
+    return _downloads_dir() / _default_export_filename(report_filter)
 
 
 def _normalize_export_path(selected_path: str) -> Path:
@@ -277,6 +296,8 @@ def _reveal_exported_file(path: Path) -> bool:
 
 class ReportsPage(QWidget):
     """Reports tab body: a read-only table backed by repository page reads."""
+
+    export_succeeded = Signal(str)
 
     def __init__(self, parent: QWidget | None = None, db_path: Path | str | None = None) -> None:
         super().__init__(parent)
@@ -522,20 +543,36 @@ class ReportsPage(QWidget):
 
     @Slot()
     def export_pdf(self) -> None:
-        """Prompt for a save path and export the full current filtered result set."""
+        """Confirm the export scope (today by default), then prompt for a save path."""
         if self._active_export is not None:
             return
+
+        export_state = self._prompt_export_state()
+        if export_state is None:
+            return
+        export_filter = build_report_filter(export_state)
 
         selected_path, _selected_filter = QFileDialog.getSaveFileName(
             self,
             EXPORT_DIALOG_TITLE,
-            str(_default_export_path(self._report_filter)),
+            str(_default_export_path(export_filter)),
             EXPORT_FILE_FILTER,
         )
         if not selected_path:
             return
 
-        self._start_export(_normalize_export_path(selected_path))
+        self._start_export(
+            _normalize_export_path(selected_path),
+            report_filter=export_filter,
+            filter_label=_format_export_filter_label(summarize_filter_state(export_state)),
+        )
+
+    def _prompt_export_state(self) -> ReportFilterUiState | None:
+        """Run the export-scope dialog; ``None`` means the user cancelled."""
+        dialog = ExportOptionsDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            return dialog.selected_state()
+        return None
 
     def _ensure_repository(self) -> None:
         if self._repository is not None:
@@ -601,12 +638,9 @@ class ReportsPage(QWidget):
             button.clicked.connect(lambda _checked=False, page=item: self.go_to_page(page))
             self._page_buttons_layout.addWidget(button)
 
-    def _current_filter_summary(self) -> str:
-        if self._active_filter_ui_state is not None:
-            return summarize_filter_state(self._active_filter_ui_state)
-        return summarize_report_filter(self._report_filter)
-
-    def _start_export(self, out_path: Path) -> None:
+    def _start_export(
+        self, out_path: Path, *, report_filter: ReportFilter, filter_label: str
+    ) -> None:
         self._hide_reveal_export_button()
         self._last_export_path = None
         self.filter_panel.export_button.setEnabled(False)
@@ -617,8 +651,8 @@ class ReportsPage(QWidget):
 
         export_job = _PdfExportRunnable(
             db_path=self._db_path,
-            report_filter=self._report_filter,
-            filter_label=_format_export_filter_label(self._current_filter_summary()),
+            report_filter=report_filter,
+            filter_label=filter_label,
             out_path=out_path,
         )
         export_job.signals.succeeded.connect(self._on_export_succeeded)
@@ -635,6 +669,7 @@ class ReportsPage(QWidget):
         if status_bar is not None:
             status_bar.showMessage(f"Exported PDF to {out_path.name}")
         self._show_reveal_export_button()
+        self.export_succeeded.emit(out_path_str)
 
     @Slot()
     def _on_export_failed(self) -> None:

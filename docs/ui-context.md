@@ -12,9 +12,13 @@
 ## Surfaces
 
 ### 1) System tray (menu bar)
-- Icon + compact text if space allows: `↓ 5.02  ↑ 1.20 MB/s` (updates every 1s).
-- Menu items: `Open Speedlog`, separator, `Pause/Resume Tracking` (v1 optional),
-  separator, `Quit` (confirm dialog: "Quitting stops speed tracking. Quit?").
+- Speed-gauge template icon (light/dark adaptive); hover tooltip shows the live speeds.
+- Menu items: disabled live-speed status row `↓ 5.02 MB/s  ↑ 1.20 MB/s` (updates every
+  1s; `— offline` when disconnected), separator, `Open Speedlog`, separator, `Quit`
+  (confirm dialog: "Quitting stops speed tracking. Quit?").
+- Unbundled dev runs patch `CFBundleName` at startup (`app/macos.py`) so the macOS app
+  menu reads "Speedlog", not "Python".
+- `Pause/Resume Tracking` menu item remains a v1-optional idea (own ticket).
 
 ### 2) Main window (900×620 default, resizable)
 Sidebar-less, two tabs (QTabWidget or segmented control):
@@ -44,10 +48,14 @@ Layout top→bottom:
    (constant `PAGE_SIZE = 20`), with direct page links collapsing via ellipses when needed.
 
 ### 3) Export flow
-- Click Export PDF → `QFileDialog.getSaveFileName` default name
-  `Speedlog-Report-<YYYY-MM-DD>_<YYYY-MM-DD>.pdf`
-- Busy cursor / disabled button during generation → success toast/statusbar message with
-  "Reveal in Finder" option; failure → QMessageBox with logged error reference.
+- Click Export PDF → modal scope dialog first: `Date` (default, today) |
+  `Date Range` | `Date + Time Range` | `All records`; Cancel aborts the export
+- Accept → `QFileDialog.getSaveFileName` defaulting to the Downloads folder, name
+  `Speedlog-Report-<YYYY-MM-DD>_<YYYY-MM-DD>.pdf` (from the chosen scope,
+  `-all` for All records)
+- Busy cursor / disabled button during generation → success statusbar message with
+  "Reveal in Finder" option plus a tray notification naming the file;
+  failure → QMessageBox with logged error reference (no notification).
 
 ## Time & formatting rules
 - Times shown as 12-hour with AM/PM (`10:05 AM`), dates as `YYYY-MM-DD` in table,
@@ -58,6 +66,10 @@ Layout top→bottom:
 
 ## Styling
 - Single `ui/styles.qss` loaded at startup; keep minimal — respect native look.
+- SVG glyphs for editors live in `ui/icons/` and are referenced as `url(icons/...)` in
+  the QSS; `app.main.load_styles()` resolves them to absolute paths at startup.
+- Date fields show a calendar glyph and open a design-matched QCalendarWidget popup;
+  time fields show a clock glyph with chevron steppers. Both keep manual keyboard input.
 - Accent color: `#2E7CF6`. PDF header highlight uses the same accent.
 - Prefer palette-aware styling so the app still feels native in light/dark appearances.
 - No hardcoded colors in Python; reference constants in `config.py`.

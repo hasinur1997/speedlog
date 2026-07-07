@@ -30,6 +30,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-403 | Tray menu (open, quit w/ confirm) | DONE | NST-402 | 2026-07-07 | Tray menu adds Open/Quit actions, quit confirmation, and `quit_confirmed -> app.quit` wiring; tray tests expanded |
 | NST-404 | Quit behavior: stop tracking, flush segment | DONE | NST-403, NST-305 | 2026-07-07 | `aboutToQuit` now stops + joins the collector, flushes the final segment/session on quit, and startup recovery of dangling sessions is covered by integration tests |
 | NST-405 | Professional UI refresh: segmented tabs & cohesive chrome | DONE | NST-605, NST-802 | 2026-07-07 | Stylesheet-only redesign: quiet segmented tab control (no geometry jump), soft app bg behind white cards, unified control radii/states, tinted table selection; verified via offscreen screenshots |
+| NST-406 | macOS app-menu name + tray gauge icon + live speed in tray menu | DONE | NST-402, NST-403 | 2026-07-07 | ctypes/objc CFBundleName patch in new app/macos.py (pre-QApplication); tray shows a gauge template icon, and the live `↓ x ↑ y` readout is a disabled first row of the tray menu (text-in-icon was tried and dropped: macOS scales it unreadably small) |
 | NST-501 | Live tab: current speeds + session info | DONE | NST-401, NST-305 | 2026-07-07 | Real LiveView widget with connected-since line, hidden-tab speed caching, and collector/tray signal timestamp wiring; 3 pytest-qt tests added |
 | NST-502 | Live sparkline chart (nice-to-have) | DONE | NST-501 | 2026-07-07 | Rolling 60-sample live chart with hidden-tab redraw pause; pinned pyqtgraph and added pytest-qt coverage |
 | NST-503 | Live tab visual polish | DONE | NST-502, NST-605 | 2026-07-07 | Live tab now renders on a white surfaced panel with cleaner tab states; pytest-qt styling-hook coverage added |
@@ -45,12 +46,15 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-701 | Filter panel UI (4 modes) | DONE | NST-601 | 2026-07-07 | Added reports FilterPanel with typed UI state emission, reset-to-all behavior, and pytest-qt coverage |
 | NST-702 | Filter → query builder | DONE | NST-701, NST-203 | 2026-07-07 | Added pure local→UTC filter builder, wired Apply/Reset through reports reload, and covered DST/reversed-range cases plus a pytest-qt table integration |
 | NST-703 | Filter validation, reset, edge cases | DONE | NST-702 | 2026-07-07 | Added applied-filter status line, reset-to-all behavior docs, and edge-case filter coverage (future dates, inclusive instants, tab persistence) |
+| NST-704 | Date/time editor affordances: calendar icon, styled popup, time steppers | DONE | NST-701, NST-803 | 2026-07-07 | SVG icons in app/ui/icons + class-wide QDateEdit/QTimeEdit/QCalendarWidget styling (also covers export dialog); load_styles() resolves url(icons/…) to absolute paths; screenshots + tests |
 
 ## Milestone 5 — Export & platform
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
 | NST-801 | PDF generator (header, table, footer) | DONE | NST-203 | 2026-07-07 | Added streaming reportlab PDF export, cross-platform full-name lookup, and PDF coverage for empty/multi-page/large reports |
 | NST-802 | Export flow in UI (dialog, busy state) | DONE | NST-801, NST-702 | 2026-07-07 | Reports tab now exports the full filtered set via a worker thread with save dialog defaults, status-bar feedback, Finder reveal action, and a surfaced filter/export layout that matches the reports design system |
+| NST-803 | Export scope confirmation dialog | DONE | NST-802 | 2026-07-07 | Export PDF now opens a modal scope popup (today by default; date range, date+time range, or all records) that drives the default filename, PDF header label, and worker query instead of the table filter |
+| NST-804 | Export defaults to Downloads + completion notification | DONE | NST-803 | 2026-07-07 | Save dialog now defaults to the Downloads folder (home fallback), and a successful export raises a tray notification via a new `export_succeeded` signal wired to `SpeedTrayIcon.showMessage` |
 | NST-901 | Autostart at login (macOS LaunchAgent) | TODO | NST-401 | | |
 | NST-902 | PyInstaller macOS .app packaging | TODO | all M1–M4 | | |
 | NST-903 | Code signing & notarization guide | TODO | NST-902 | | |

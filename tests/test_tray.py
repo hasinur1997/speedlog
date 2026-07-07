@@ -6,7 +6,9 @@ import pytest
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QSystemTrayIcon
 
+from app import config
 from app.ui.tray import (
+    EXPORT_NOTIFY_TEXT_TEMPLATE,
     OFFLINE_TEXT,
     OPEN_ACTION_TEXT,
     QUIT_ACTION_TEXT,
@@ -123,20 +125,40 @@ def test_tray_icon_is_a_template_mask(tray: SpeedTrayIcon) -> None:
     assert tray_icon().isMask() is True
 
 
-def test_menu_has_open_separator_quit(tray: SpeedTrayIcon) -> None:
+def test_menu_starts_with_disabled_offline_speed_row(tray: SpeedTrayIcon) -> None:
+    assert tray.speed_action.text() == OFFLINE_TEXT
+    assert not tray.speed_action.isEnabled()
+
+
+def test_speed_sampled_updates_menu_speed_row(
+    tray: SpeedTrayIcon, collector: FakeCollector
+) -> None:
+    collector.speed_sampled.emit(5_020_000.0, 1_200_000.0)
+    assert tray.speed_action.text() == "↓ 5.02 MB/s  ↑ 1.20 MB/s"
+
+
+def test_offline_restores_offline_speed_row(tray: SpeedTrayIcon, collector: FakeCollector) -> None:
+    collector.speed_sampled.emit(5_020_000.0, 1_200_000.0)
+    collector.session_changed.emit(False, 1, 1_700_000_000)
+    assert tray.speed_action.text() == OFFLINE_TEXT
+
+
+def test_menu_has_speed_row_open_and_quit(tray: SpeedTrayIcon) -> None:
     menu = tray.contextMenu()
     assert menu is not None
     actions = menu.actions()
     assert [a.text() for a in actions if not a.isSeparator()] == [
+        OFFLINE_TEXT,
         OPEN_ACTION_TEXT,
         QUIT_ACTION_TEXT,
     ]
-    assert len(actions) == 3
+    assert len(actions) == 5
     assert actions[1].isSeparator()
+    assert actions[3].isSeparator()
 
 
 def test_open_action_brings_window_to_front(tray: SpeedTrayIcon, window: FakeWindow) -> None:
-    open_action = tray.contextMenu().actions()[0]
+    open_action = tray.contextMenu().actions()[2]
     open_action.trigger()
     assert window.bring_to_front_calls == 1
 
@@ -148,7 +170,7 @@ def test_quit_cancelled_does_not_emit_quit_confirmed(
     emitted: list[bool] = []
     tray.quit_confirmed.connect(lambda: emitted.append(True))
 
-    tray.contextMenu().actions()[2].trigger()
+    tray.contextMenu().actions()[4].trigger()
 
     assert emitted == []
 
@@ -159,4 +181,26 @@ def test_quit_confirmed_emits_quit_confirmed(
     monkeypatch.setattr(tray, "_confirm_quit", lambda: True)
 
     with qtbot.waitSignal(tray.quit_confirmed, timeout=1000):
-        tray.contextMenu().actions()[2].trigger()
+        tray.contextMenu().actions()[4].trigger()
+
+
+def test_export_succeeded_shows_notification(
+    tray: SpeedTrayIcon, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    shown: list[tuple[str, str, QSystemTrayIcon.MessageIcon, int]] = []
+    monkeypatch.setattr(
+        tray,
+        "showMessage",
+        lambda title, message, icon, timeout: shown.append((title, message, icon, timeout)),
+    )
+
+    tray.on_export_succeeded("/Users/someone/Downloads/Speedlog-Report-all.pdf")
+
+    assert shown == [
+        (
+            config.APP_NAME,
+            EXPORT_NOTIFY_TEXT_TEMPLATE.format(name="Speedlog-Report-all.pdf"),
+            QSystemTrayIcon.MessageIcon.Information,
+            config.EXPORT_NOTIFY_TIMEOUT_MS,
+        )
+    ]

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import sqlite3
 import time
 import uuid
@@ -112,6 +113,15 @@ def test_configure_application_sets_quit_policy_and_styles(qapp: QApplication) -
 def test_load_styles_reads_qss_file() -> None:
     styles = load_styles()
     assert "Speedlog" in styles
+
+
+def test_load_styles_resolves_icon_urls_to_existing_files() -> None:
+    styles = load_styles()
+    assert "url(icons/" not in styles
+    icon_paths = re.findall(r"url\(([^)]+\.svg)\)", styles)
+    assert icon_paths, "expected the stylesheet to reference svg icons"
+    for icon_path in icon_paths:
+        assert Path(icon_path).is_file(), f"missing icon referenced by styles.qss: {icon_path}"
 
 
 def test_first_instance_acquires(make_guard) -> None:

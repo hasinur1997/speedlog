@@ -19,7 +19,7 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtWidgets import QApplication
 
-from app import config, logging_setup
+from app import config, logging_setup, macos
 from app.collector.service import CollectorService
 from app.data import db
 from app.ui.main_window import MainWindow, app_icon
@@ -28,6 +28,7 @@ from app.ui.tray import SpeedTrayIcon
 logger = logging.getLogger(__name__)
 
 _STYLES_PATH = Path(__file__).parent / "ui" / "styles.qss"
+_ICONS_DIR = Path(__file__).parent / "ui" / "icons"
 
 
 class _ShutdownService(Protocol):
@@ -92,8 +93,13 @@ class SingleInstanceGuard(QObject):
 
 
 def load_styles() -> str:
-    """Read the application stylesheet from ui/styles.qss."""
-    return _STYLES_PATH.read_text(encoding="utf-8")
+    """Read ui/styles.qss, resolving url(icons/...) to absolute icon paths.
+
+    QSS urls resolve relative to the process working directory, so relative
+    icon references would break when the app is launched from anywhere else.
+    """
+    styles = _STYLES_PATH.read_text(encoding="utf-8")
+    return styles.replace("url(icons/", f"url({_ICONS_DIR.as_posix()}/")
 
 
 def configure_application(app: QApplication) -> None:
@@ -132,6 +138,9 @@ def install_quit_shutdown(app: QApplication, service: _ShutdownService) -> Calla
 def main() -> int:
     """Start the Qt application."""
     logging_setup.configure(debug=False)
+    # Must happen before QApplication registers with the window server, or the
+    # macOS app menu keeps the "Python" title from the venv's bundle.
+    macos.set_app_menu_name()
     app = QApplication(sys.argv)
 
     guard = SingleInstanceGuard()
@@ -155,6 +164,7 @@ def main() -> int:
     service.segment_closed.connect(window.reports_page.on_segment_closed)
     service.speed_sampled.connect(tray.on_speed_sampled)
     service.session_changed.connect(tray.on_session_changed)
+    window.reports_page.export_succeeded.connect(tray.on_export_succeeded)
     tray.quit_confirmed.connect(app.quit)
     tray.show()
     service.start()
