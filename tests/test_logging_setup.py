@@ -59,16 +59,16 @@ def test_configure_adds_rotating_file_handler_and_writes_records(
 
     file_handler = _configured_handler(logging_setup._FILE_HANDLER_NAME)
     assert isinstance(file_handler, RotatingFileHandler)
-    assert Path(file_handler.baseFilename) == tmp_path / "app.log"
-    assert file_handler.maxBytes == 5 * 1024 * 1024
-    assert file_handler.backupCount == 3
+    assert Path(file_handler.baseFilename) == tmp_path / logging_setup.config.LOG_FILE_NAME
+    assert file_handler.maxBytes == logging_setup.config.LOG_FILE_MAX_BYTES
+    assert file_handler.backupCount == logging_setup.config.LOG_FILE_BACKUP_COUNT
     assert _configured_handler(logging_setup._CONSOLE_HANDLER_NAME) is None
 
     logger = logging.getLogger("speedlog.tests.logging_setup")
     logger.info("file handler writes records")
     _flush_speedlog_handlers()
 
-    log_path = tmp_path / "app.log"
+    log_path = tmp_path / logging_setup.config.LOG_FILE_NAME
     assert log_path.is_file()
     content = log_path.read_text(encoding="utf-8")
     assert "file handler writes records" in content
@@ -141,6 +141,6 @@ def test_configure_logs_uncaught_exceptions(
 
     _flush_speedlog_handlers()
 
-    content = (tmp_path / "app.log").read_text(encoding="utf-8")
+    content = (tmp_path / logging_setup.config.LOG_FILE_NAME).read_text(encoding="utf-8")
     assert "Uncaught exception" in content
     assert "RuntimeError: boom" in content

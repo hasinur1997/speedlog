@@ -5,6 +5,9 @@ import platform
 from pathlib import Path
 
 APP_NAME = "Speedlog"
+LOG_FILE_NAME = "app.log"
+LOG_FILE_MAX_BYTES = 5_000_000
+LOG_FILE_BACKUP_COUNT = 3
 
 # Collector tunables (see docs/architecture-context.md, "Segmenter algorithm")
 SAMPLE_INTERVAL = 1.0  # seconds between psutil samples

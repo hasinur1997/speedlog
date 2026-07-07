@@ -11,9 +11,6 @@ from types import TracebackType
 
 from speedlog import config
 
-_LOG_FILE_NAME = "app.log"
-_MAX_LOG_BYTES = 5 * 1024 * 1024
-_BACKUP_COUNT = 3
 _LOG_FORMAT = "%(asctime)s %(levelname)s [%(module)s] [%(threadName)s] %(message)s"
 _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 _FILE_HANDLER_NAME = "speedlog.file"
@@ -35,9 +32,9 @@ def configure(debug: bool) -> None:
     root_logger.setLevel(logging.DEBUG)
 
     file_handler = RotatingFileHandler(
-        config.log_dir() / _LOG_FILE_NAME,
-        maxBytes=_MAX_LOG_BYTES,
-        backupCount=_BACKUP_COUNT,
+        config.log_dir() / config.LOG_FILE_NAME,
+        maxBytes=config.LOG_FILE_MAX_BYTES,
+        backupCount=config.LOG_FILE_BACKUP_COUNT,
         encoding="utf-8",
     )
     file_handler.set_name(_FILE_HANDLER_NAME)
