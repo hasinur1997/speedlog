@@ -10,7 +10,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-102 | Config module & constants | DONE | NST-101 | 2026-07-07 | All tunables + APP_NAME/ACCENT_COLOR in config.py; platform-branched data_dir()/db_path()/log_dir(); 15 tests |
 | NST-103 | Logging setup | DONE | NST-101 | 2026-07-07 | Root logging config with config-backed rotating app.log (5 MB x 3) + opt-in console (`debug`/`NST_DEBUG=1`); uncaught exceptions logged; 5 unit tests |
 | NST-201 | SQLite schema & migrations | DONE | NST-102 | 2026-07-07 | get_connection (WAL/FK/NORMAL PRAGMAs) + versioned atomic migrate() in data/db.py; 7 tests |
-| NST-202 | Models & repository (writes) | TODO | NST-201 | | |
+| NST-202 | Models & repository (writes) | DONE | NST-201 | 2026-07-07 | Session/SpeedRecord dataclasses + Repository write API (start/end_session, insert_record, close_dangling_sessions); transactional parameterized SQL; 6 tests |
 | NST-203 | Repository read/pagination/filter queries | TODO | NST-202 | | |
 
 ## Milestone 2 — Collector (tracking engine)

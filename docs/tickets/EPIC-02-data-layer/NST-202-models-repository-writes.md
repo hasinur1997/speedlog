@@ -4,7 +4,7 @@
 - **Type:** Feature
 - **Priority:** P1
 - **Estimate:** M
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** NST-201
 
 ## Description
@@ -24,3 +24,15 @@ In-memory DB: insert/read-back roundtrip; end_session sets reason; dangling-sess
 recovery closes open sessions.
 
 ## Implementation notes (fill after DONE)
+- Files: `speedlog/data/models.py`, `speedlog/data/repository.py`, `tests/test_repository.py`.
+- `Session` and `SpeedRecord` are `@dataclass(slots=True)` with `id: int | None = None`
+  last so required fields stay positional.
+- `Repository(conn)` wraps a caller-owned connection (one per thread per the
+  architecture rules); every write uses `with self._conn:` so failures roll back —
+  verified by a test that a foreign-key violation leaves `speed_records` empty.
+- `close_dangling_sessions(ts)` closes all rows with `end_ts IS NULL`, sets
+  `end_reason='quit'`, and returns the count. Intended for startup crash recovery
+  (NST-304/NST-305 should call it before `start_session`).
+- Read-side queries (pagination/filters) deliberately not added — that's NST-203.
+- Tests use in-memory SQLite with `PRAGMA foreign_keys=ON` + `db.migrate`; 6 tests,
+  `pytest -q` (33 total), `ruff check .`, `black --check .` all green.
