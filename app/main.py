@@ -2,7 +2,9 @@
 
 Order: logging → single-instance guard → DB migrate → styles/icon →
 main window → tray + CollectorService wiring (NST-402) → exec().
-Quitting is tray-driven (NST-403/404); closing the window only hides it.
+Quitting is tray-driven (NST-403): the tray's confirmed quit calls
+QApplication.quit(); the flush-on-quit shutdown path is NST-404.
+Closing the window only hides it.
 """
 
 from __future__ import annotations
@@ -119,6 +121,7 @@ def main() -> int:
     tray = SpeedTrayIcon(window, parent=app)
     service.speed_sampled.connect(tray.on_speed_sampled)
     service.session_changed.connect(tray.on_session_changed)
+    tray.quit_confirmed.connect(app.quit)
     tray.show()
     service.start()
 

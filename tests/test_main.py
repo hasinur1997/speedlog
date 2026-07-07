@@ -6,11 +6,28 @@ import uuid
 from collections.abc import Callable
 
 import pytest
+from PySide6.QtNetwork import QLocalServer
 from PySide6.QtWidgets import QApplication
 
 from app.main import SingleInstanceGuard, configure_application, load_styles
 
 SIGNAL_TIMEOUT_MS = 3000
+
+
+def _guard_key() -> str:
+    """Short unique key keeps the macOS local-socket path under AF_UNIX limits."""
+    return f"sl-{uuid.uuid4().hex[:8]}"
+
+
+def _local_server_supported() -> bool:
+    """Sandboxed runs may disallow QLocalServer entirely; skip activation tests there."""
+    key = _guard_key()
+    server = QLocalServer()
+    try:
+        return server.listen(key)
+    finally:
+        server.close()
+        QLocalServer.removeServer(key)
 
 
 @pytest.fixture
@@ -42,12 +59,15 @@ def test_load_styles_reads_qss_file() -> None:
 
 
 def test_first_instance_acquires(make_guard) -> None:
-    key = f"speedlog-test-{uuid.uuid4()}"
+    key = _guard_key()
     assert make_guard(key).try_acquire() is True
 
 
 def test_second_instance_does_not_acquire_and_activates_first(qtbot, make_guard) -> None:
-    key = f"speedlog-test-{uuid.uuid4()}"
+    if not _local_server_supported():
+        pytest.skip("QLocalServer listen is unavailable in this environment")
+
+    key = _guard_key()
     first = make_guard(key)
     assert first.try_acquire() is True
 
@@ -57,7 +77,7 @@ def test_second_instance_does_not_acquire_and_activates_first(qtbot, make_guard)
 
 
 def test_release_allows_reacquisition(make_guard) -> None:
-    key = f"speedlog-test-{uuid.uuid4()}"
+    key = _guard_key()
     first = make_guard(key)
     assert first.try_acquire() is True
     first.release()

@@ -27,7 +27,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 |---|---|---|---|---|---|
 | NST-401 | App bootstrap & main window shell | DONE | NST-102 | 2026-07-07 | Real main() (logging→single-instance→migrate→styles/icon→window→exec); MainWindow 900x620 Live/Reports tabs, close hides; QLocalServer single-instance w/ activate + stale-socket recovery; 11 tests |
 | NST-402 | System tray icon + live speed text | DONE | NST-401, NST-305 | 2026-07-07 | SpeedTrayIcon (template/mask icon): tooltip `↓ x  ↑ y` throttled to 1/s, `— offline` on session end, trigger/double-click opens window; shared format_speed() in app/formatting.py; collector started + wired in main(); 17 tests |
-| NST-403 | Tray menu (open, quit w/ confirm) | TODO | NST-402 | | |
+| NST-403 | Tray menu (open, quit w/ confirm) | DONE | NST-402 | 2026-07-07 | Tray menu adds Open/Quit actions, quit confirmation, and `quit_confirmed -> app.quit` wiring; tray tests expanded |
 | NST-404 | Quit behavior: stop tracking, flush segment | TODO | NST-403, NST-305 | | |
 | NST-501 | Live tab: current speeds + session info | TODO | NST-401, NST-305 | | |
 | NST-502 | Live sparkline chart (nice-to-have) | TODO | NST-501 | | |

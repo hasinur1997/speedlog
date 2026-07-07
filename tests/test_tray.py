@@ -1,4 +1,4 @@
-"""Tests for app.ui.tray (NST-402)."""
+"""Tests for app.ui.tray (NST-402, NST-403)."""
 
 from __future__ import annotations
 
@@ -6,7 +6,13 @@ import pytest
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QSystemTrayIcon
 
-from app.ui.tray import OFFLINE_TEXT, SpeedTrayIcon, tray_icon
+from app.ui.tray import (
+    OFFLINE_TEXT,
+    OPEN_ACTION_TEXT,
+    QUIT_ACTION_TEXT,
+    SpeedTrayIcon,
+    tray_icon,
+)
 
 
 class FakeCollector(QObject):
@@ -115,3 +121,42 @@ def test_context_activation_does_not_open_main_window(
 def test_tray_icon_is_a_template_mask(tray: SpeedTrayIcon) -> None:
     assert not tray.icon().isNull()
     assert tray_icon().isMask() is True
+
+
+def test_menu_has_open_separator_quit(tray: SpeedTrayIcon) -> None:
+    menu = tray.contextMenu()
+    assert menu is not None
+    actions = menu.actions()
+    assert [a.text() for a in actions if not a.isSeparator()] == [
+        OPEN_ACTION_TEXT,
+        QUIT_ACTION_TEXT,
+    ]
+    assert len(actions) == 3
+    assert actions[1].isSeparator()
+
+
+def test_open_action_brings_window_to_front(tray: SpeedTrayIcon, window: FakeWindow) -> None:
+    open_action = tray.contextMenu().actions()[0]
+    open_action.trigger()
+    assert window.bring_to_front_calls == 1
+
+
+def test_quit_cancelled_does_not_emit_quit_confirmed(
+    tray: SpeedTrayIcon, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(tray, "_confirm_quit", lambda: False)
+    emitted: list[bool] = []
+    tray.quit_confirmed.connect(lambda: emitted.append(True))
+
+    tray.contextMenu().actions()[2].trigger()
+
+    assert emitted == []
+
+
+def test_quit_confirmed_emits_quit_confirmed(
+    qtbot, tray: SpeedTrayIcon, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(tray, "_confirm_quit", lambda: True)
+
+    with qtbot.waitSignal(tray.quit_confirmed, timeout=1000):
+        tray.contextMenu().actions()[2].trigger()
