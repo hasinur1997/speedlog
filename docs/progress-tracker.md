@@ -29,7 +29,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-402 | System tray icon + live speed text | DONE | NST-401, NST-305 | 2026-07-07 | SpeedTrayIcon (template/mask icon): tooltip `↓ x  ↑ y` throttled to 1/s, `— offline` on session end, trigger/double-click opens window; shared format_speed() in app/formatting.py; collector started + wired in main(); 17 tests |
 | NST-403 | Tray menu (open, quit w/ confirm) | DONE | NST-402 | 2026-07-07 | Tray menu adds Open/Quit actions, quit confirmation, and `quit_confirmed -> app.quit` wiring; tray tests expanded |
 | NST-404 | Quit behavior: stop tracking, flush segment | DONE | NST-403, NST-305 | 2026-07-07 | `aboutToQuit` now stops + joins the collector, flushes the final segment/session on quit, and startup recovery of dangling sessions is covered by integration tests |
-| NST-501 | Live tab: current speeds + session info | TODO | NST-401, NST-305 | | |
+| NST-501 | Live tab: current speeds + session info | DONE | NST-401, NST-305 | 2026-07-07 | Real LiveView widget with connected-since line, hidden-tab speed caching, and collector/tray signal timestamp wiring; 3 pytest-qt tests added |
 | NST-502 | Live sparkline chart (nice-to-have) | TODO | NST-501 | | |
 
 ## Milestone 4 — Reports

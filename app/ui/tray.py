@@ -83,9 +83,10 @@ class SpeedTrayIcon(QSystemTrayIcon):
         self._last_tooltip_monotonic = now
         self.setToolTip(f"↓ {format_speed(download_bps)}  ↑ {format_speed(upload_bps)}")
 
-    @Slot(bool, int)
-    def on_session_changed(self, online: bool, session_id: int) -> None:
+    @Slot(bool, int, int)
+    def on_session_changed(self, online: bool, session_id: int, changed_at: int) -> None:
         """Show the offline marker; reset the throttle so the next sample shows at once."""
+        del session_id, changed_at
         if online:
             return
         self._last_tooltip_monotonic = float("-inf")

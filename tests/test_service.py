@@ -89,11 +89,16 @@ def test_speed_sampled_emitted_with_smoothed_values(qtbot, make_service) -> None
 
 def test_session_changed_emitted_on_start(qtbot, make_service) -> None:
     service, _ = make_service()
+    started_before = int(time.time())
 
     with qtbot.waitSignal(service.session_changed, timeout=SIGNAL_TIMEOUT_MS) as blocker:
         service.start()
 
-    assert blocker.args == [True, 1]
+    started_after = int(time.time())
+    online, session_id, changed_at = blocker.args
+    assert online is True
+    assert session_id == 1
+    assert started_before <= changed_at <= started_after
 
 
 def test_stop_persists_open_segment_and_quit_session_and_joins_fast(qtbot, make_service) -> None:
@@ -159,7 +164,8 @@ def test_start_recovers_dangling_session_from_previous_crash(qtbot, tmp_path: Pa
         with qtbot.waitSignal(service.session_changed, timeout=SIGNAL_TIMEOUT_MS) as blocker:
             service.start()
 
-        assert blocker.args == [True, dangling_id + 1]
+        assert blocker.args[0] is True
+        assert blocker.args[1] == dangling_id + 1
 
         service.stop()
         assert service.wait(config.COLLECTOR_JOIN_TIMEOUT_MS)

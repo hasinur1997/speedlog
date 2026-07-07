@@ -38,7 +38,7 @@ class CollectorService(QThread):
 
     speed_sampled = Signal(float, float)  # smoothed (download_bps, upload_bps)
     segment_closed = Signal()  # a segment row was persisted
-    session_changed = Signal(bool, int)  # (online, session_id)
+    session_changed = Signal(bool, int, int)  # (online, session_id, changed_at_utc_ts)
 
     def __init__(
         self,
@@ -85,10 +85,10 @@ class CollectorService(QThread):
                 segmenter=segmenter,
                 smoother=smoother,
                 on_session_started=lambda session_id, ts: self.session_changed.emit(
-                    True, session_id
+                    True, session_id, ts
                 ),
                 on_session_ended=lambda session_id, ts: self.session_changed.emit(
-                    False, session_id
+                    False, session_id, ts
                 ),
             )
             sampler = Sampler(self._sampler_source, interval=self._interval)
@@ -160,4 +160,4 @@ class CollectorService(QThread):
             logger.exception("Failed to persist final segment/session on quit")
             return
         logger.info("Session %d ended (quit)", session_id)
-        self.session_changed.emit(False, session_id)
+        self.session_changed.emit(False, session_id, now)

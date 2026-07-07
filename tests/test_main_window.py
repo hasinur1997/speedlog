@@ -6,6 +6,7 @@ import pytest
 from PySide6.QtWidgets import QTabWidget, QWidget
 
 from app import config
+from app.ui.live_view import LiveView
 from app.ui.main_window import MainWindow, app_icon
 
 
@@ -32,7 +33,9 @@ def test_tabs_exist_by_object_name(window: MainWindow) -> None:
     assert tabs.count() == 2
     assert tabs.tabText(0) == "Live"
     assert tabs.tabText(1) == "Reports"
-    assert window.findChild(QWidget, "liveTab") is not None
+    live_tab = window.findChild(QWidget, "liveTab")
+    assert live_tab is not None
+    assert isinstance(live_tab, LiveView)
     assert window.findChild(QWidget, "reportsTab") is not None
 
 

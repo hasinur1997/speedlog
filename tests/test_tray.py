@@ -19,7 +19,7 @@ class FakeCollector(QObject):
     """Emits the same signals as CollectorService, from the test (main) thread."""
 
     speed_sampled = Signal(float, float)
-    session_changed = Signal(bool, int)
+    session_changed = Signal(bool, int, int)
 
 
 class FakeWindow:
@@ -74,7 +74,7 @@ def test_session_changed_offline_shows_offline_text(
     tray: SpeedTrayIcon, collector: FakeCollector
 ) -> None:
     collector.speed_sampled.emit(5_020_000.0, 1_200_000.0)
-    collector.session_changed.emit(False, 1)
+    collector.session_changed.emit(False, 1, 1_700_000_000)
     assert tray.toolTip() == OFFLINE_TEXT
 
 
@@ -82,7 +82,7 @@ def test_session_changed_online_keeps_tooltip(
     tray: SpeedTrayIcon, collector: FakeCollector
 ) -> None:
     collector.speed_sampled.emit(5_020_000.0, 1_200_000.0)
-    collector.session_changed.emit(True, 2)
+    collector.session_changed.emit(True, 2, 1_700_000_000)
     assert tray.toolTip() == "↓ 5.02 MB/s  ↑ 1.20 MB/s"
 
 
@@ -90,7 +90,7 @@ def test_offline_resets_throttle_so_next_sample_shows_immediately(
     tray: SpeedTrayIcon, collector: FakeCollector
 ) -> None:
     collector.speed_sampled.emit(5_020_000.0, 1_200_000.0)
-    collector.session_changed.emit(False, 1)
+    collector.session_changed.emit(False, 1, 1_700_000_000)
     collector.speed_sampled.emit(2_500_000.0, 500_000.0)
     assert tray.toolTip() == "↓ 2.50 MB/s  ↑ 500.00 KB/s"
 

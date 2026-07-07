@@ -150,6 +150,8 @@ def main() -> int:
     install_quit_shutdown(app, service)
 
     tray = SpeedTrayIcon(window, parent=app)
+    service.speed_sampled.connect(window.live_view.on_speed_sampled)
+    service.session_changed.connect(window.live_view.on_session_changed)
     service.speed_sampled.connect(tray.on_speed_sampled)
     service.session_changed.connect(tray.on_session_changed)
     tray.quit_confirmed.connect(app.quit)

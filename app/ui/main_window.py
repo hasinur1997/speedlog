@@ -7,6 +7,7 @@ from PySide6.QtGui import QCloseEvent, QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import QLabel, QMainWindow, QTabWidget, QVBoxLayout, QWidget
 
 from app import config
+from app.ui.live_view import LiveView
 
 
 def app_icon() -> QIcon:
@@ -50,11 +51,15 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(app_icon())
         self.resize(config.MAIN_WINDOW_WIDTH, config.MAIN_WINDOW_HEIGHT)
 
-        tabs = QTabWidget(self)
-        tabs.setObjectName("mainTabs")
-        tabs.addTab(_placeholder_tab("liveTab", "Live view coming soon (NST-501)"), "Live")
-        tabs.addTab(_placeholder_tab("reportsTab", "Reports coming soon (NST-601)"), "Reports")
-        self.setCentralWidget(tabs)
+        self.tabs = QTabWidget(self)
+        self.tabs.setObjectName("mainTabs")
+        self.live_view = LiveView(self.tabs)
+        self.tabs.addTab(self.live_view, "Live")
+        self.tabs.addTab(
+            _placeholder_tab("reportsTab", "Reports coming soon (NST-601)"),
+            "Reports",
+        )
+        self.setCentralWidget(self.tabs)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Hide instead of closing — the app keeps tracking in the tray."""
