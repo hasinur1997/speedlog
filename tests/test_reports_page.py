@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import QDate, QTime, Qt
+from PySide6.QtCore import QDate, Qt, QTime
 from PySide6.QtWidgets import QPushButton
 
 import app.formatting as formatting_module
@@ -427,7 +427,9 @@ def test_reports_page_apply_date_filter_reloads_table_and_resets_page(
     assert page.filter_status_label.text() == "Filtered: 2026-07-07"
 
 
-def test_reports_page_reset_returns_to_no_filter_page_one(qtbot, tmp_path: Path, monkeypatch) -> None:
+def test_reports_page_reset_returns_to_no_filter_page_one(
+    qtbot, tmp_path: Path, monkeypatch
+) -> None:
     db_file = tmp_path / "reports.db"
     _seed_filter_records(db_file)
     monkeypatch.setattr(filter_builder_module, "_local_zone", lambda: ZoneInfo("UTC"))

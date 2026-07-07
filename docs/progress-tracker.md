@@ -43,12 +43,12 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-603 | Formatting: time ranges, units, empty state | DONE | NST-601 | 2026-07-07 | Shared report date/time formatting now lives in `app.formatting`, including midnight rollover markers and DST-safe local rendering; table/PDF wiring + tests added |
 | NST-701 | Filter panel UI (4 modes) | DONE | NST-601 | 2026-07-07 | Added reports FilterPanel with typed UI state emission, reset-to-all behavior, and pytest-qt coverage |
 | NST-702 | Filter → query builder | DONE | NST-701, NST-203 | 2026-07-07 | Added pure local→UTC filter builder, wired Apply/Reset through reports reload, and covered DST/reversed-range cases plus a pytest-qt table integration |
-| NST-703 | Filter validation, reset, edge cases | TODO | NST-702 | | |
+| NST-703 | Filter validation, reset, edge cases | DONE | NST-702 | 2026-07-07 | Added applied-filter status line, reset-to-all behavior docs, and edge-case filter coverage (future dates, inclusive instants, tab persistence) |
 
 ## Milestone 5 — Export & platform
 | ID | Title | Status | Depends on | Done date | Notes |
 |---|---|---|---|---|---|
-| NST-801 | PDF generator (header, table, footer) | TODO | NST-203 | | |
+| NST-801 | PDF generator (header, table, footer) | DONE | NST-203 | 2026-07-07 | Added streaming reportlab PDF export, cross-platform full-name lookup, and PDF coverage for empty/multi-page/large reports |
 | NST-802 | Export flow in UI (dialog, busy state) | TODO | NST-801, NST-702 | | |
 | NST-901 | Autostart at login (macOS LaunchAgent) | TODO | NST-401 | | |
 | NST-902 | PyInstaller macOS .app packaging | TODO | all M1–M4 | | |

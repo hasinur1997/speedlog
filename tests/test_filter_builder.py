@@ -134,4 +134,6 @@ def test_summarize_report_filter_formats_full_day_bounds_as_single_date() -> Non
         range_end_ts=_utc_ts(datetime(2026, 7, 7, 23, 59, 59, tzinfo=UTC)),
     )
 
-    assert summarize_report_filter(report_filter, local_zone=ZoneInfo("UTC")) == "Filtered: 2026-07-07"
+    assert (
+        summarize_report_filter(report_filter, local_zone=ZoneInfo("UTC")) == "Filtered: 2026-07-07"
+    )
