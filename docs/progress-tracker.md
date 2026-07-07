@@ -11,7 +11,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-103 | Logging setup | DONE | NST-101 | 2026-07-07 | Root logging config with config-backed rotating app.log (5 MB x 3) + opt-in console (`debug`/`NST_DEBUG=1`); uncaught exceptions logged; 5 unit tests |
 | NST-201 | SQLite schema & migrations | DONE | NST-102 | 2026-07-07 | get_connection (WAL/FK/NORMAL PRAGMAs) + versioned atomic migrate() in data/db.py; 7 tests |
 | NST-202 | Models & repository (writes) | DONE | NST-201 | 2026-07-07 | Session/SpeedRecord dataclasses + Repository write API (start/end_session, insert_record, close_dangling_sessions); transactional parameterized SQL; 6 tests |
-| NST-203 | Repository read/pagination/filter queries | TODO | NST-202 | | |
+| NST-203 | Repository read/pagination/filter queries | DONE | NST-202 | 2026-07-07 | ReportFilter + count_records/fetch_records (start_ts DESC, LIMIT/OFFSET)/fetch_all_records (chunked iterator); overlap semantics; index use verified via EXPLAIN; 10 tests |
 
 ## Milestone 2 — Collector (tracking engine)
 | ID | Title | Status | Depends on | Done date | Notes |

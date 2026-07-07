@@ -12,12 +12,12 @@ Dataclasses (`SpeedRecord`, `Session`) in `data/models.py` and the write-side AP
 `data/repository.py`. ALL SQL lives here.
 
 ## Acceptance criteria
-- [ ] `Repository(conn)` with: `start_session(ts) -> int`,
+- [x] `Repository(conn)` with: `start_session(ts) -> int`,
       `end_session(id, ts, reason)`, `insert_record(SpeedRecord) -> int`
-- [ ] `SpeedRecord`: session_id, start_ts, end_ts, download_bps, upload_bps (+ id opt.)
-- [ ] Parameterized SQL only; each write in a transaction
-- [ ] Recovery helper `close_dangling_sessions(ts)` for crash cleanup at startup
-- [ ] Type hints + docstrings on all public methods
+- [x] `SpeedRecord`: session_id, start_ts, end_ts, download_bps, upload_bps (+ id opt.)
+- [x] Parameterized SQL only; each write in a transaction
+- [x] Recovery helper `close_dangling_sessions(ts)` for crash cleanup at startup
+- [x] Type hints + docstrings on all public methods
 
 ## Test plan
 In-memory DB: insert/read-back roundtrip; end_session sets reason; dangling-session

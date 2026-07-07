@@ -17,6 +17,9 @@ BAND_TOLERANCE_FLOOR_BPS = 250_000  # 0.25 MB/s absolute floor, bytes/sec
 HYSTERESIS_TICKS = 5  # consecutive out-of-band samples to split a segment
 MIN_SEGMENT_SECS = 5  # shorter segments merge into a neighbor
 
+# Data layer
+DB_FETCH_CHUNK_SIZE = 500  # rows per fetchmany() batch when streaming full result sets
+
 # UI
 PAGE_SIZE = 20  # report rows per page
 ACCENT_COLOR = "#2E7CF6"
