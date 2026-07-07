@@ -24,6 +24,7 @@ from app import config
 from app.data import db
 from app.data.models import ReportFilter
 from app.data.repository import Repository
+from app.ui.reports.filter_panel import FilterPanel
 from app.ui.reports.table_model import ReportsTableModel
 
 EMPTY_STATE_TEXT = "No records for the selected filter."
@@ -130,6 +131,9 @@ class ReportsPage(QWidget):
         self.subtitle_label.setWordWrap(True)
         header_layout.addWidget(self.subtitle_label)
         surface_layout.addWidget(self.header_widget)
+
+        self.filter_panel = FilterPanel(self.surface)
+        surface_layout.addWidget(self.filter_panel)
 
         self.model = ReportsTableModel(self)
         self.table = QTableView(self)

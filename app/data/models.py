@@ -1,9 +1,39 @@
-"""Dataclasses for the data layer: :class:`Session`, :class:`SpeedRecord`,
-:class:`ReportFilter` (NST-202/NST-203)."""
+"""Dataclasses and enums shared by the data and report-filter layers."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date, time
+from enum import Enum
+
+
+class ReportFilterMode(Enum):
+    """UI filter modes supported by the reports filter bar."""
+
+    DATE = "date"
+    DATE_RANGE = "date_range"
+    DATE_TIME = "date_time"
+    DATE_TIME_RANGE = "date_time_range"
+
+
+@dataclass(slots=True)
+class ReportFilterUiState:
+    """Raw UI state captured from the reports filter panel.
+
+    ``mode=None`` represents "no filter" after Reset. Otherwise the active mode
+    determines which fields are meaningful:
+
+    - ``DATE``: ``start_date``
+    - ``DATE_RANGE``: ``start_date`` + ``end_date``
+    - ``DATE_TIME``: ``start_date`` + ``start_time``
+    - ``DATE_TIME_RANGE``: ``start_date`` + ``start_time`` + ``end_time``
+    """
+
+    mode: ReportFilterMode | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    start_time: time | None = None
+    end_time: time | None = None
 
 
 @dataclass(slots=True)

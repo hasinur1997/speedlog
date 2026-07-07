@@ -41,7 +41,7 @@ Update this file at the end of EVERY ticket. Work top-to-bottom unless dependenc
 | NST-604 | Numbered pagination links | DONE | NST-602 | 2026-07-07 | Reports pagination now includes direct page links with collapsed `...` gaps for larger result sets; direct-jump pytest-qt coverage added |
 | NST-605 | Reports table and tabs visual polish | DONE | NST-604, NST-401 | 2026-07-07 | Main tabs now render as polished segmented controls, and the reports page uses a surfaced layout with refined table/pagination styling; pytest-qt coverage added |
 | NST-603 | Formatting: time ranges, units, empty state | DONE | NST-601 | 2026-07-07 | Shared report date/time formatting now lives in `app.formatting`, including midnight rollover markers and DST-safe local rendering; table/PDF wiring + tests added |
-| NST-701 | Filter panel UI (4 modes) | TODO | NST-601 | | |
+| NST-701 | Filter panel UI (4 modes) | DONE | NST-601 | 2026-07-07 | Added reports FilterPanel with typed UI state emission, reset-to-all behavior, and pytest-qt coverage |
 | NST-702 | Filter → query builder | TODO | NST-701, NST-203 | | |
 | NST-703 | Filter validation, reset, edge cases | TODO | NST-702 | | |
 

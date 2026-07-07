@@ -15,6 +15,7 @@ from app.data import db
 from app.data.models import ReportFilter, SpeedRecord
 from app.data.repository import Repository
 from app.ui.main_window import MainWindow
+from app.ui.reports.filter_panel import FilterPanel
 from app.ui.reports.reports_page import ReportsPage
 from app.ui.reports.table_model import ReportsTableModel
 
@@ -131,6 +132,11 @@ def test_reports_page_exposes_visual_polish_hooks(qtbot, tmp_path: Path) -> None
 
     assert page.surface.objectName() == "reportsSurface"
     assert page.header_widget.objectName() == "reportsHeader"
+    assert isinstance(page.filter_panel, FilterPanel)
+    assert page.filter_panel.objectName() == "reportsFilterPanel"
+    assert (
+        page.filter_panel.mode_combo.toolTip() == "Choose how the reports table should be filtered."
+    )
     assert page.title_label.text() == "Connection History"
     assert "move through pages" in page.subtitle_label.text()
     assert page.table_area.objectName() == "reportsTableArea"

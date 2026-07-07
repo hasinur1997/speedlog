@@ -48,6 +48,7 @@ APP_ICON_GLYPH = "S"
 APP_ICON_GLYPH_COLOR = "#FFFFFF"
 REPORTS_SURFACE_PADDING = 24
 REPORTS_SECTION_SPACING = 18
+REPORTS_FILTER_BAR_SPACING = 10
 REPORTS_TABLE_ROW_HEIGHT = 42
 # Tray tooltip refresh throttle: just under the 1s sample cadence so timing
 # jitter in signal delivery doesn't drop every other update.

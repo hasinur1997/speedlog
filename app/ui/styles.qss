@@ -84,6 +84,11 @@ QWidget#reportsPaginationBar {
     border: none;
 }
 
+QWidget#reportsFilterPanel {
+    background: transparent;
+    border: none;
+}
+
 QLabel#reportsTitleLabel {
     color: palette(text);
     font-size: 22px;
@@ -93,12 +98,35 @@ QLabel#reportsTitleLabel {
 QLabel#reportsSubtitleLabel,
 QLabel#reportsPageLabel,
 QLabel#reportsCountLabel,
-QLabel#reportsPageEllipsisLabel {
+QLabel#reportsPageEllipsisLabel,
+QLabel#reportsFilterDateRangeSeparator,
+QLabel#reportsFilterTimeRangeSeparator {
     color: palette(mid);
 }
 
 QLabel#reportsSubtitleLabel {
     font-size: 13px;
+}
+
+QWidget#reportsFilterPanel QComboBox,
+QWidget#reportsFilterPanel QDateEdit,
+QWidget#reportsFilterPanel QTimeEdit {
+    min-height: 30px;
+}
+
+QPushButton#reportsFilterApplyButton,
+QPushButton#reportsFilterResetButton {
+    background: palette(button);
+    color: palette(button-text);
+    border: 1px solid palette(midlight);
+    border-radius: 10px;
+    padding: 7px 12px;
+    min-height: 18px;
+}
+
+QPushButton#reportsFilterApplyButton:hover:!disabled,
+QPushButton#reportsFilterResetButton:hover:!disabled {
+    background: palette(alternate-base);
 }
 
 QLabel#reportsPageLabel {
